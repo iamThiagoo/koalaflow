@@ -1,5 +1,5 @@
 {
-  "name": "@org/source",
+  "name": "@koalaflow/source",
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
@@ -10,7 +10,10 @@
   "private": true,
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
+    "@nestjs/schematics": "^11.0.0",
     "@nx/js": "23.2.0",
+    "@nx/nest": "23.2.0",
+    "@nx/node": "23.2.0",
     "@swc-node/register": "1.11.1",
     "@swc/core": "1.15.8",
     "@swc/helpers": "0.5.18",
