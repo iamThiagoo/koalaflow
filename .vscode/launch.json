@@ -6,7 +6,7 @@
       "request": "launch",
       "name": "Debug @koalaflow/api with Nx",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["exec", "nx", "serve", "@koalaflow/api"],
+      "runtimeArgs": ["exec", "nx", "dev", "@koalaflow/api"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
       },

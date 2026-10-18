@@ -12,17 +12,20 @@ even when the conversation with the user is in Portuguese.
 
 - Nx 23 + pnpm 11 workspaces (`apps/*`, `packages/*`), Node 24 (`.nvmrc`; run `nvm use`).
 - Package scope: `@koalaflow/*`. Use pnpm only (never npm/yarn).
-- Run tasks through Nx: `pnpm nx <target> <project>`, e.g. `pnpm nx serve @koalaflow/api`.
+- Run tasks through Nx: `pnpm nx <target> <project>`, e.g. `pnpm nx dev @koalaflow/api`.
 
 ### Apps
 
 | App | Stack | Status |
 |---|---|---|
 | `apps/api` | NestJS 12 (ESM), `@nestjs/cqrs`, built with `tsc` (`@nx/js:tsc`) | created |
-| `apps/app` | Next: creator dashboard; the player is the `/embed/[videoId]` route using Video.js 10 (`@videojs/react`) | planned |
+| `apps/app` | Next 16 (App Router, Turbopack): creator dashboard; the player is the `/embed/[videoId]` route using Video.js 10 (`@videojs/react`) | created |
 | `apps/worker` | Node + FFmpeg, consumes SQS, outputs HLS | planned |
 
 There is no separate player app.
+
+`apps/app` does not use `@nx/next` (it pulls in webpack). Its targets come from `package.json` scripts;
+`typecheck` is `next typegen && tsc --noEmit` because `@nx/js/typescript` skips Next projects.
 
 ## Architecture (DDD)
 
