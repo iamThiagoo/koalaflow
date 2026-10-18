@@ -4,4 +4,6 @@ packages:
 allowBuilds:
   '@swc/core': true
   nx: true
-  "@nestjs/core": false
+  '@nestjs/core': false
+  '@parcel/watcher': false
+  unrs-resolver: false
