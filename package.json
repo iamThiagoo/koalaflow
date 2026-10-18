@@ -5,7 +5,8 @@
   "scripts": {
     "check": "biome check .",
     "format": "biome format --write .",
-    "lint": "biome lint ."
+    "lint": "biome lint .",
+    "prepare": "husky"
   },
   "private": true,
   "devDependencies": {
@@ -19,6 +20,7 @@
     "@swc/core": "1.15.8",
     "@swc/helpers": "0.5.18",
     "@types/node": "^24.0.0",
+    "husky": "9.1.7",
     "nx": "23.2.0",
     "tslib": "^2.3.0",
     "typescript": "~6.0.3"

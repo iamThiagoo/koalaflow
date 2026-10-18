@@ -1,0 +1,6 @@
+base=origin/main
+git rev-parse --verify -q "$base" >/dev/null || base=HEAD~1
+
+pnpm exec biome ci .
+OPENSPEC_TELEMETRY=0 pnpm exec openspec validate --all --strict --no-interactive
+pnpm exec nx affected -t lint test build typecheck --base="$base" --head=HEAD
