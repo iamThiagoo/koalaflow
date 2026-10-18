@@ -37,6 +37,14 @@
           }
         }
       }
+    },
+    {
+      "includes": [".claude/settings.json"],
+      "json": {
+        "formatter": {
+          "expand": "always"
+        }
+      }
     }
   ],
   "assist": {
