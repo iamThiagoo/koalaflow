@@ -10,6 +10,7 @@
   "private": true,
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
+    "@fission-ai/openspec": "1.14.3",
     "@nestjs/schematics": "^11.0.0",
     "@nx/js": "23.2.0",
     "@nx/nest": "23.2.0",

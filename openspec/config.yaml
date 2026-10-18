@@ -1,0 +1,69 @@
+schema: spec-driven
+
+context: |
+  Language: English
+  All artifacts, code, identifiers and commit messages must be written in English,
+  even when the conversation with the user is in another language.
+
+  Product: Koalaflow, a video hosting platform (Vimeo / Panda Video style):
+  upload -> FFmpeg transcoding to HLS -> signed CloudFront delivery -> embedded player.
+
+  Monorepo: Nx + pnpm, Node 24. Apps:
+  - apps/api: NestJS 12 (ESM), @nestjs/cqrs, built with tsc
+  - apps/app: Next (creator dashboard; the player is the /embed/[videoId] route, Video.js 10)
+  - apps/worker: Node + FFmpeg, consumes SQS
+
+  Architecture (DDD):
+  - Bounded contexts live in packages/<context>/{domain,application,infrastructure}
+  - domain has no framework or infrastructure dependencies
+  - Events inside a context: @nestjs/cqrs EventBus; between contexts/services: outbox table -> SQS
+  - Postgres is the main database
+  - AWS via Terraform, Docker; LocalStack for local S3/SQS
+
+  Constraints:
+  - Relative imports use the .js extension (ESM)
+  - Biome for format and lint (no ESLint/Prettier)
+  - No webpack anywhere
+  - No Nx Cloud
+  - Run tasks through Nx: pnpm nx <target> <project>
+
+  Code comments:
+  - Comments about business rules or design decisions must be simple, short and objective,
+    in a block comment with one "* Rule: ..." line per rule. Example:
+      /**
+       * Rule: a video can only be published after transcoding succeeds.
+       */
+
+  Testing policy:
+  - Unit tests: write efficient unit tests that prioritize business rules, validations, calculations, error scenarios and relevant behaviors. Tests must verify expected results and behavior, not internal implementation details.
+  - End-to-end (E2E) tests: write E2E tests when the integration between important modules, services or components needs to be validated. Not every flow needs an end-to-end test. Prioritize business-critical scenarios and those where integration can introduce significant failures.
+  - Quality criterion: prefer tests that add confidence and help prevent regressions over chasing code coverage at any cost.
+  - Maintainability: keep tests simple, deterministic, independent and easy to understand. Avoid duplication, unnecessary mocks and brittle tests that depend on internal details.
+  - New features and fixes: every new feature or bug fix must add or update the relevant tests, following the criteria above.
+  - Execution: run the relevant tests after making changes and fix any failures before considering the implementation complete.
+  Goal: keep a reliable test suite proportional to the project's complexity, focused on business rules and the highest-risk areas.
+
+rules:
+  proposal:
+    - State which bounded contexts are affected
+    - Always state what is out of scope
+  specs:
+    - Every requirement has at least one error or edge-case scenario besides the happy path
+    - Write scenarios as observable behavior (inputs and outcomes), never implementation details
+  design:
+    - Name the aggregates and domain events involved
+    - Call out new dependencies and why they are needed
+    - "Include a test strategy following the testing policy: which business rules get unit tests and which critical integrations, if any, need E2E tests"
+  tasks:
+    - Pair each feature or bug-fix task with the tests it needs, following the testing policy
+    - End with a verification task running pnpm check and pnpm nx affected -t typecheck build test
+
+operations:
+  apply:
+    guidance:
+      - Follow the testing policy in the project context
+      - Run the relevant tests after each change and fix any failures before marking a task or the change as done
+  archive:
+    guidance:
+      - Before archiving, confirm all tasks are checked and the verification task passed
+      - Summarize which main specs were added or changed

@@ -30,4 +30,7 @@ jobs:
       - uses: nrwl/nx-set-shas@v4
 
       - run: pnpm exec biome ci .
+      - run: pnpm exec openspec validate --all --strict --no-interactive
+        env:
+          OPENSPEC_TELEMETRY: '0'
       - run: pnpm exec nx affected -t lint test build typecheck e2e
