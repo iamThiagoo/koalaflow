@@ -28,7 +28,7 @@ export default function HomePage() {
           header={<SiteHeader content={home.header} links={links} />}
           appUrl={appUrl}
         />
-        <ProductProtection content={home.protection} />
+        <ProductProtection content={home.protection} appUrl={appUrl} />
         <HowItWorks content={home.howItWorks} />
         <Faq
           content={home.faq}

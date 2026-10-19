@@ -1,4 +1,5 @@
 import type { LinkTarget } from '@/links';
+import { formatMinutes, linkLifetimeMinutes } from '@/theft-demo';
 
 export interface ContentLink {
   label: string;
@@ -70,33 +71,76 @@ export const home = {
     },
   },
   protection: {
-    title: 'Feito para conteúdo que não pode vazar',
+    claim: `${formatMinutes(linkLifetimeMinutes)}.`,
+    claimTail: 'É o que dura um link copiado.',
+    subtitle: [
+      'Copiou, colou no grupo do Telegram? Quando alguém clicar, já era.',
+      'O player só toca nos domínios que você liberou.',
+    ],
     items: [
       {
-        icon: 'shield',
-        title: 'Entrega segura',
-        description:
-          'Cada reprodução usa URLs assinadas e temporárias. Links copiados expiram e deixam de funcionar.',
+        icon: 'lock',
+        text: 'Privado por padrão. Nem precisa lembrar de trancar.',
       },
       {
-        icon: 'shield',
-        title: 'Embeds restritos por domínio',
-        description:
-          'O player só abre nos sites que você autorizar. Em qualquer outro lugar, o vídeo não carrega.',
+        icon: 'cloud',
+        text: 'Sobe 10 GB sem medo. Caiu a net? Continua de onde parou.',
       },
       {
-        icon: 'play',
-        title: 'Streaming adaptativo',
-        description:
-          'Conversão automática para HLS em várias qualidades, para o vídeo rodar bem em qualquer conexão.',
+        icon: 'code',
+        text: 'Um iframe e pronto. Roda na sua plataforma de curso.',
       },
       {
-        icon: 'upload',
-        title: 'Upload direto para a nuvem',
-        description:
-          'Arquivos grandes sobem direto do navegador para o armazenamento, em partes e com retomada.',
+        icon: 'signal',
+        text: 'Roda liso até no 4G do ônibus.',
       },
     ],
+    cta: 'Tenta roubar esse vídeo',
+    microcopyStrong: 'Privado por padrão.',
+    microcopy: ' Sem configurar servidor.',
+    demo: {
+      label:
+        'Demonstração: tente assistir a um vídeo protegido fora do site autorizado',
+      authorizedHost: 'alunos.minhaescola.com',
+      otherHost: 'cursinho-pirata.example',
+      videoTitle: 'Aula 07 · Conteúdo exclusivo',
+      linkLabel: 'Link assinado do vídeo',
+      expiresIn: 'Expira em',
+      expiredBadge: 'Expirado',
+      intro:
+        'Esse é o player no site do curso. Copie o link do vídeo e tente assistir em outro lugar.',
+      simulationNote: 'É uma simulação: nada é copiado de verdade.',
+      playing: 'Tocando',
+      actions: {
+        pasteElsewhere: 'Copiar e colar em outro site',
+        openAuthorized: 'Abrir o link copiado no site do curso',
+        skip: `Pular ${formatMinutes(linkLifetimeMinutes)}`,
+        restart: 'Tentar de novo',
+      },
+      outcomes: {
+        plays: {
+          title: 'Ainda toca, por enquanto.',
+          body: 'No site autorizado, o link vale até a contagem zerar.',
+        },
+        blockedDomain: {
+          title: 'Esse vídeo não carrega aqui.',
+          body: 'Domínio não autorizado: o player só abre nos sites que o dono do vídeo liberou.',
+        },
+        expired: {
+          title: 'Esse link expirou.',
+          body: `Cada link vale ${formatMinutes(linkLifetimeMinutes)}. Depois disso, não toca nem no site do curso.`,
+        },
+      },
+      primaryCta: 'Começar agora',
+      fallback: {
+        intro:
+          'Na demonstração, você copia o link assinado de um vídeo e tenta assistir fora do site do curso. O resultado:',
+        outcomes: [
+          'Em outro site: “Esse vídeo não carrega aqui.” O domínio não está autorizado.',
+          `Depois de ${formatMinutes(linkLifetimeMinutes)}: o link expira e não toca nem no site do curso.`,
+        ],
+      },
+    },
   },
   howItWorks: {
     title: 'Como funciona',

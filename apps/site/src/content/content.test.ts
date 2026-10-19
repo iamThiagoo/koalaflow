@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { home } from '@/content/home';
+import {
+  formatCountdown,
+  linkLifetimeMinutes,
+  linkLifetimeMs,
+} from '@/theft-demo';
 
 function emptyLeaves(value: unknown, path: string): string[] {
   if (typeof value === 'string') return value.trim() ? [] : [path];
@@ -19,5 +24,12 @@ function emptyLeaves(value: unknown, path: string): string[] {
 describe('home content', () => {
   it('has no empty or non-string texts', () => {
     expect(emptyLeaves(home, '')).toEqual([]);
+  });
+
+  it('states the same link lifetime the demo counts down', () => {
+    expect(home.protection.claim).toBe(`${linkLifetimeMinutes} minutos.`);
+    expect(formatCountdown(linkLifetimeMs)).toBe(
+      `${String(linkLifetimeMinutes).padStart(2, '0')}:00`,
+    );
   });
 });
