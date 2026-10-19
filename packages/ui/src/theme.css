@@ -1,0 +1,38 @@
+/**
+ * Rule: brand tokens live here only; apps import this file instead of redefining them.
+ * Rule: --font-brand is set by each app's next/font loader; the stack falls back to system fonts.
+ */
+@theme inline {
+  --font-sans:
+    var(--font-brand, ui-sans-serif), ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+@theme {
+  --color-brand-50: oklch(0.97 0.02 275);
+  --color-brand-100: oklch(0.94 0.04 275);
+  --color-brand-200: oklch(0.88 0.07 275);
+  --color-brand-300: oklch(0.79 0.11 275);
+  --color-brand-400: oklch(0.68 0.16 275);
+  --color-brand-500: oklch(0.58 0.2 275);
+  --color-brand-600: oklch(0.5 0.21 275);
+  --color-brand-700: oklch(0.43 0.19 275);
+  --color-brand-800: oklch(0.36 0.15 275);
+  --color-brand-900: oklch(0.3 0.11 275);
+  --color-brand-950: oklch(0.21 0.08 275);
+
+  --color-ink-50: oklch(0.98 0.003 265);
+  --color-ink-100: oklch(0.96 0.005 265);
+  --color-ink-200: oklch(0.91 0.008 265);
+  --color-ink-300: oklch(0.84 0.012 265);
+  --color-ink-400: oklch(0.7 0.017 265);
+  --color-ink-500: oklch(0.55 0.02 265);
+  --color-ink-600: oklch(0.45 0.02 265);
+  --color-ink-700: oklch(0.37 0.02 265);
+  --color-ink-800: oklch(0.28 0.018 265);
+  --color-ink-900: oklch(0.21 0.015 265);
+  --color-ink-950: oklch(0.14 0.012 265);
+
+  --radius-card: 1rem;
+  --radius-control: 0.625rem;
+}

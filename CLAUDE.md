@@ -20,12 +20,27 @@ even when the conversation with the user is in Portuguese.
 |---|---|---|
 | `apps/api` | NestJS 12 (ESM), `@nestjs/cqrs`, built with `tsc` (`@nx/js:tsc`) | created |
 | `apps/app` | Next 16 (App Router, Turbopack): creator dashboard; the player is the `/embed/[videoId]` route using Video.js 10 (`@videojs/react`) | created |
+| `apps/site` | Next 16 static export (`output: 'export'`): public marketing site for the apex domain, pt-BR only | created |
 | `apps/worker` | Node + FFmpeg, consumes SQS, outputs HLS | planned |
 
 There is no separate player app.
 
-`apps/app` does not use `@nx/next` (it pulls in webpack). Its targets come from `package.json` scripts;
-`typecheck` is `next typegen && tsc --noEmit` because `@nx/js/typescript` skips Next projects.
+`apps/app` and `apps/site` do not use `@nx/next` (it pulls in webpack). Their targets come from
+`package.json` scripts; `typecheck` is `next typegen && tsc --noEmit` because `@nx/js/typescript`
+skips Next projects. Turbopack does not map `.js` imports to `.ts`, so Next apps import their own
+modules through the `@/` alias (`src/*`) instead of relative `.js` paths.
+
+`apps/site` must stay fully static: no proxy, redirects, cookies, server actions or route handlers
+that read the request. It reads `SITE_URL`, `APP_URL` and `SALES_CONTACT_URL` at build time.
+Its `tsconfig.json` excludes `.next/dev/types/validator.ts`: `next dev` generates it with unused
+imports when metadata routes exist, which breaks `noUnusedLocals`; `.next/types/validator.ts`
+still validates the routes.
+
+### Packages
+
+| Package | Purpose |
+|---|---|
+| `packages/ui` | Shared frontend design tokens (`@koalaflow/ui/theme.css`, a Tailwind 4 `@theme`) imported by `apps/app` and `apps/site`. Tokens only for now; add shared React components when both apps need the same one. Not a bounded context, so it does not use the `domain/application/infrastructure` layout. |
 
 ## Architecture (DDD)
 
@@ -38,18 +53,21 @@ There is no separate player app.
 - Uploads go straight from the browser to S3 via presigned multipart URLs, never through the api.
 - Infra: AWS via Terraform (`infra/terraform`), Docker, docker-compose with LocalStack (S3/SQS) locally.
 
+Decided:
+- Product model: Panda-style B2B protected content (private by default, domain-restricted embeds,
+  signed URLs; no public discovery pages).
+- Unit test runner: Vitest + SWC (SWC keeps Nest decorator metadata).
+
 Open decisions — ask the user, don't assume:
-- Panda-style B2B protected content (recommended) vs Vimeo-style public pages.
 - MongoDB: recommended to leave it out (Postgres now, ClickHouse later for playback analytics).
 - Auth provider.
-- Unit test runner (none configured yet; Vitest + SWC recommended).
 
 ## Constraints
 
 - No webpack anywhere. Node/Nest builds use `tsc`; frontends use Vite or the framework's bundler.
   Nx generators may add webpack, ESLint or Prettier — remove them after generating.
 - No Nx Cloud, no ESLint, no Prettier. Biome handles format, lint and import sorting.
-- ESM: relative imports use the `.js` extension (`import { X } from './x.js'`).
+- ESM: relative imports use the `.js` extension (`import { X } from './x.js'`); Next apps use the `@/` alias instead.
 - Nest DI: never use `import type` for injected classes (it erases the runtime reference).
   Biome's `useImportType` is turned off for `apps/api/**` and `packages/**` for this reason.
 - New dependencies with install scripts must be listed in `allowBuilds` in `pnpm-workspace.yaml`

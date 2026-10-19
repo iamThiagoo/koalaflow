@@ -1,0 +1,12 @@
+{
+  "name": "@koalaflow/ui",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./theme.css": {
+      "style": "./src/theme.css",
+      "default": "./src/theme.css"
+    }
+  }
+}

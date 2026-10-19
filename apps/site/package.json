@@ -1,0 +1,76 @@
+{
+  "name": "@koalaflow/site",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "nx": {
+    "targets": {
+      "build": {
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [
+          "production",
+          "^production",
+          {
+            "env": "SITE_URL"
+          },
+          {
+            "env": "APP_URL"
+          },
+          {
+            "env": "SALES_CONTACT_URL"
+          }
+        ],
+        "outputs": [
+          "{projectRoot}/out",
+          "{projectRoot}/.next",
+          "!{projectRoot}/.next/cache"
+        ]
+      },
+      "typecheck": {
+        "cache": true,
+        "inputs": [
+          "default",
+          "^production"
+        ],
+        "outputs": [
+          "{projectRoot}/next-env.d.ts",
+          "{projectRoot}/.next/types"
+        ]
+      },
+      "test": {
+        "cache": true,
+        "inputs": [
+          "default",
+          "^production"
+        ]
+      },
+      "dev": {
+        "continuous": true
+      }
+    }
+  },
+  "scripts": {
+    "dev": "next dev --port 3002",
+    "build": "next build",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@koalaflow/ui": "workspace:*",
+    "next": "16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "^24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "~6.0.3",
+    "vitest": "5.0.5"
+  }
+}

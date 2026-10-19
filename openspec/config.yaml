@@ -11,17 +11,24 @@ context: |
   Monorepo: Nx + pnpm, Node 24. Apps:
   - apps/api: NestJS 12 (ESM), @nestjs/cqrs, built with tsc
   - apps/app: Next (creator dashboard; the player is the /embed/[videoId] route, Video.js 10)
+  - apps/site: Next static export (public marketing site, pt-BR only)
   - apps/worker: Node + FFmpeg, consumes SQS
 
   Architecture (DDD):
   - Bounded contexts live in packages/<context>/{domain,application,infrastructure}
+  - packages/ui is the shared frontend design-token package, not a bounded context
   - domain has no framework or infrastructure dependencies
   - Events inside a context: @nestjs/cqrs EventBus; between contexts/services: outbox table -> SQS
   - Postgres is the main database
   - AWS via Terraform, Docker; LocalStack for local S3/SQS
 
+  Product decisions:
+  - B2B protected content (Panda style): videos private by default, domain-restricted embeds,
+    signed URLs, no public discovery pages
+  - Unit tests: Vitest + SWC
+
   Constraints:
-  - Relative imports use the .js extension (ESM)
+  - Relative imports use the .js extension (ESM); Next apps use the @/ alias instead
   - Biome for format and lint (no ESLint/Prettier)
   - No webpack anywhere
   - No Nx Cloud
