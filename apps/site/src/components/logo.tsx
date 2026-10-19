@@ -1,16 +1,27 @@
+import Image from 'next/image';
+
 export function Logo() {
   return (
-    <span className="inline-flex items-center gap-2 font-bold text-ink-950 text-lg tracking-tight">
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 32 32"
-        className="size-7 text-brand-600"
-        fill="currentColor"
-      >
-        <rect width="32" height="32" rx="8" />
-        <path d="M13 10.5v11l9-5.5-9-5.5Z" fill="white" />
-      </svg>
-      Koalaflow
-    </span>
+    <Image
+      src="/landing/logo.png"
+      alt="Koalaflow"
+      loading="eager"
+      width={923}
+      height={198}
+      className="block h-7 w-[130.5px] object-contain"
+    />
+  );
+}
+
+/**
+ * Rule: the white logo is the original mark used as a luminance mask, as in the Figma footer.
+ */
+export function LogoWhite() {
+  return (
+    <span
+      role="img"
+      aria-label="Koalaflow"
+      className="block h-7 w-[130.525px] shrink-0 bg-white [mask-image:url(/landing/logo-white-mask.svg)] [mask-mode:luminance] [mask-repeat:no-repeat] [mask-size:100%_100%]"
+    />
   );
 }

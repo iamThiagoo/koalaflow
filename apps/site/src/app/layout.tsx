@@ -1,11 +1,14 @@
 import type { ReactNode } from 'react';
-import { brandFont } from '@/fonts';
+import { brandFont, handwritingFont } from '@/fonts';
 import './globals.css';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="pt-BR" className={brandFont.variable}>
-      <body className="bg-white font-sans text-ink-900 antialiased">
+    <html
+      lang="pt-BR"
+      className={`${brandFont.variable} ${handwritingFont.variable} motion-safe:scroll-smooth`}
+    >
+      <body className="bg-surface font-sans text-text-primary antialiased">
         {children}
       </body>
     </html>

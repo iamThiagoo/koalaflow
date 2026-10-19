@@ -44,6 +44,15 @@
       }
     },
     {
+      "includes": ["apps/*/public/**"],
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      }
+    },
+    {
       "includes": [".claude/settings.json"],
       "json": {
         "formatter": {

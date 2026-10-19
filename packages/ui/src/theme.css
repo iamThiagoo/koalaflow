@@ -1,38 +1,40 @@
 /**
  * Rule: brand tokens live here only; apps import this file instead of redefining them.
- * Rule: --font-brand is set by each app's next/font loader; the stack falls back to system fonts.
+ * Rule: --font-brand and --font-handwriting are set by each app's next/font loader; the stacks fall back to system fonts.
+ * Rule: color names mirror the Koalaflow Figma variables (color/<name>) so design and code stay traceable.
  */
 @theme inline {
   --font-sans:
     var(--font-brand, ui-sans-serif), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji";
+  --font-hand: var(--font-handwriting, cursive), cursive;
 }
 
 @theme {
-  --color-brand-50: oklch(0.97 0.02 275);
-  --color-brand-100: oklch(0.94 0.04 275);
-  --color-brand-200: oklch(0.88 0.07 275);
-  --color-brand-300: oklch(0.79 0.11 275);
-  --color-brand-400: oklch(0.68 0.16 275);
-  --color-brand-500: oklch(0.58 0.2 275);
-  --color-brand-600: oklch(0.5 0.21 275);
-  --color-brand-700: oklch(0.43 0.19 275);
-  --color-brand-800: oklch(0.36 0.15 275);
-  --color-brand-900: oklch(0.3 0.11 275);
-  --color-brand-950: oklch(0.21 0.08 275);
+  --color-primary: #7fd6b0;
+  --color-primary-hover: #9fe0c4;
+  --color-primary-soft: #e5f7ef;
+  --color-primary-strong: #338362;
+  --color-primary-foreground: #1e2a3a;
 
-  --color-ink-50: oklch(0.98 0.003 265);
-  --color-ink-100: oklch(0.96 0.005 265);
-  --color-ink-200: oklch(0.91 0.008 265);
-  --color-ink-300: oklch(0.84 0.012 265);
-  --color-ink-400: oklch(0.7 0.017 265);
-  --color-ink-500: oklch(0.55 0.02 265);
-  --color-ink-600: oklch(0.45 0.02 265);
-  --color-ink-700: oklch(0.37 0.02 265);
-  --color-ink-800: oklch(0.28 0.018 265);
-  --color-ink-900: oklch(0.21 0.015 265);
-  --color-ink-950: oklch(0.14 0.012 265);
+  --color-text-primary: #1f4647;
+  --color-text-secondary: #5f7089;
+  --color-text-body: #18181b;
+  --color-text-kpi: #22344a;
 
-  --radius-card: 1rem;
-  --radius-control: 0.625rem;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f8fafc;
+  --color-border: #e2e8f0;
+  --color-border-card: #e4e4e7;
+  --color-border-active: #e7edee;
+
+  --color-danger: #e7000b;
+  --color-badge-info: #eff6ff;
+  --color-badge-info-foreground: #1d4ed8;
+
+  --color-dark-background: #0d0f12;
+  --color-dark-surface-muted: #272c37;
+  --color-dark-border: #333947;
+  --color-dark-text-primary: #e4f0f1;
+  --color-dark-text-secondary: #a3acba;
 }

@@ -1,36 +1,45 @@
 import type { Metadata } from 'next';
-import { CallToAction } from '@/components/call-to-action';
+import { Faq } from '@/components/faq';
+import { FinalInvitation } from '@/components/final-invitation';
 import { Hero } from '@/components/hero';
-import { Highlights } from '@/components/highlights';
 import { HowItWorks } from '@/components/how-it-works';
+import { ProductProtection } from '@/components/product-protection';
+import { ScrollReveal } from '@/components/scroll-reveal';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { siteConfig } from '@/config';
 import { home } from '@/content/home';
+import { type LinkContext, resolveHref } from '@/links';
 import { buildHomeMetadata } from '@/seo';
 
 export const metadata: Metadata = buildHomeMetadata(siteConfig.siteUrl);
 
 export default function HomePage() {
-  const { appUrl, salesContactUrl } = siteConfig;
+  const links: LinkContext = {
+    config: siteConfig,
+    supportEmail: home.contact.supportEmail,
+  };
+  const appUrl = resolveHref('app', links);
   return (
     <>
-      <SiteHeader content={home.header} appUrl={appUrl} />
       <main>
         <Hero
           content={home.hero}
+          header={<SiteHeader content={home.header} links={links} />}
           appUrl={appUrl}
-          salesContactUrl={salesContactUrl}
         />
-        <Highlights content={home.highlights} />
+        <ProductProtection content={home.protection} />
         <HowItWorks content={home.howItWorks} />
-        <CallToAction
-          content={home.callToAction}
+        <Faq
+          content={home.faq}
           appUrl={appUrl}
-          salesContactUrl={salesContactUrl}
+          supportUrl={resolveHref('support', links)}
+          defaultOpenIndex={1}
         />
+        <FinalInvitation content={home.finalInvitation} appUrl={appUrl} />
       </main>
-      <SiteFooter content={home.footer} />
+      <SiteFooter content={home.footer} links={links} />
+      <ScrollReveal />
     </>
   );
 }
