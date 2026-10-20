@@ -28,6 +28,14 @@ context: |
   - Single AWS account, us-east-1, prod only for now; S3 remote state with native locking
   - CI authenticates to AWS with GitHub OIDC roles only (no static keys); Terraform plans on PRs, applies on main behind the production environment
 
+  Security (full policy: the "Security" section of CLAUDE.md; OWASP Top 10, OWASP API Security Top 10, ASVS Level 2):
+  - A change is security-sensitive when it touches authentication, sessions or tokens; authorization or tenant-scoped data;
+    uploads, S3 keys, file paths or FFmpeg; playback signing, keys or embed domain rules; requests to URLs from input;
+    raw SQL; IAM, networking or anything public; secrets; payments or webhooks; personal data; a new dependency or GitHub Action
+  - Main risks for this product: cross-tenant access (BOLA), leaked or long-lived playback URLs,
+    hostile media files (FFmpeg reading local files or making requests), embeds on unauthorized domains
+  - Effort is proportional: changes that are not security-sensitive need no threat analysis
+
   Secrets and personal data:
   - Never in the repository (gitleaks runs in pre-push and CI), never in Terraform variables or state, never in build-time env of the Next apps
   - Apps read secrets at runtime from Secrets Manager or SSM; private keys (e.g. CloudFront signed URLs) are created outside Terraform
@@ -66,15 +74,20 @@ rules:
   proposal:
     - State which bounded contexts are affected
     - Always state what is out of scope
+    - "In Impact, add one line 'Security: <security-sensitive areas touched>' or 'Security: none' with a short reason"
   specs:
     - Every requirement has at least one error or edge-case scenario besides the happy path
     - Write scenarios as observable behavior (inputs and outcomes), never implementation details
+    - For security-sensitive requirements, add scenarios for denied access (unauthenticated, another tenant, expired or tampered token) and for malicious or out-of-range input
   design:
+    - "A security-sensitive change always has a design.md. In Risks / Trade-offs, list each threat as: [Risk] (OWASP category) → Mitigation → how it is verified (test or check)"
+    - A risk left without mitigation is marked as accepted, with the reason, for the user to approve when reviewing
     - Name the aggregates and domain events involved
     - Call out new dependencies and why they are needed
     - "Include a test strategy following the testing policy: which business rules get unit tests and which critical integrations, if any, need E2E tests"
   tasks:
     - Pair each feature or bug-fix task with the tests it needs, following the testing policy
+    - For security-sensitive changes, map every mitigation in design.md to a task with its test, and add a task before verification to review the diff against the security policy (/security-review) and fix the findings
     - End with a verification task running pnpm check and pnpm nx affected -t typecheck build test
 
 operations:
@@ -82,7 +95,10 @@ operations:
     guidance:
       - Follow the testing policy in the project context
       - Run the relevant tests after each change and fix any failures before marking a task or the change as done
+      - Follow the Security section of CLAUDE.md; do not implement a security-sensitive change until design.md documents its risks and mitigations
+      - If a new security risk appears while implementing, add it to design.md and tasks.md before continuing, instead of working around it silently
   archive:
     guidance:
       - Before archiving, confirm all tasks are checked and the verification task passed
+      - For security-sensitive changes, confirm every mitigation in design.md has a checked task
       - Summarize which main specs were added or changed
