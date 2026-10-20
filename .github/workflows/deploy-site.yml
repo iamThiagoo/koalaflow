@@ -1,0 +1,80 @@
+name: Deploy site
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - apps/site/**
+      - packages/ui/**
+      - pnpm-lock.yaml
+      - .github/workflows/deploy-site.yml
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit SHA, branch or tag to deploy (rollback). Defaults to the head of main.
+        required: false
+        type: string
+
+concurrency:
+  group: deploy-site-prod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: ${{ vars.SITE_URL }}
+      APP_URL: ${{ vars.APP_URL }}
+      SALES_CONTACT_URL: ${{ vars.SALES_CONTACT_URL }}
+      SITE_BUCKET: ${{ vars.SITE_BUCKET }}
+      SITE_DISTRIBUTION_ID: ${{ vars.SITE_DISTRIBUTION_ID }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm exec nx build @koalaflow/site --skip-nx-cache
+
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.SITE_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Upload fingerprinted assets
+        run: >
+          aws s3 sync apps/site/out/_next/static "s3://$SITE_BUCKET/_next/static"
+          --exclude "*.DS_Store"
+          --cache-control "public, max-age=31536000, immutable"
+
+      - name: Upload pages and files
+        run: >
+          aws s3 sync apps/site/out "s3://$SITE_BUCKET"
+          --delete
+          --exclude "_next/static/*"
+          --exclude "*.DS_Store"
+          --cache-control "public, max-age=0, s-maxage=31536000, must-revalidate"
+
+      - name: Invalidate CDN cache
+        run: |
+          id=$(aws cloudfront create-invalidation \
+            --distribution-id "$SITE_DISTRIBUTION_ID" \
+            --paths '/*' \
+            --query Invalidation.Id \
+            --output text)
+          aws cloudfront wait invalidation-completed \
+            --distribution-id "$SITE_DISTRIBUTION_ID" \
+            --id "$id"

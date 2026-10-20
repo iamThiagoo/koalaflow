@@ -6,23 +6,25 @@ export interface SiteConfig {
 
 type Env = Record<string, string | undefined>;
 
-const defaults = {
-  SITE_URL: 'https://koalaflow.com',
-  APP_URL: 'https://app.koalaflow.com',
-  SALES_CONTACT_URL: 'mailto:sales@koalaflow.com',
-} as const;
+type VariableName = 'SITE_URL' | 'APP_URL' | 'SALES_CONTACT_URL';
 
 /**
- * Rule: an unset or empty variable falls back to the production default.
+ * Rule: values come from the environment (`apps/site/.env` locally, repository variables in CI).
+ * Rule: an unset or empty variable fails the build; there are no hardcoded defaults.
  * Rule: an invalid URL fails the build instead of publishing broken links.
  * Rule: URLs are stored without a trailing slash so paths can be appended safely.
  */
 function readUrl(
   env: Env,
-  name: keyof typeof defaults,
+  name: VariableName,
   protocols: readonly string[],
 ): string {
-  const raw = env[name]?.trim() || defaults[name];
+  const raw = env[name]?.trim();
+  if (!raw) {
+    throw new Error(
+      `${name} is not set; copy apps/site/.env.example to apps/site/.env`,
+    );
+  }
   let url: URL;
   try {
     url = new URL(raw);

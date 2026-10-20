@@ -26,6 +26,11 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
 
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
       - run: pnpm install --frozen-lockfile
       - uses: nrwl/nx-set-shas@v4
 
@@ -33,4 +38,5 @@ jobs:
       - run: pnpm exec openspec validate --all --strict --no-interactive
         env:
           OPENSPEC_TELEMETRY: '0'
+      - run: cp apps/site/.env.example apps/site/.env
       - run: pnpm exec nx affected -t lint test build typecheck e2e

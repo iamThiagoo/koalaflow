@@ -51,3 +51,18 @@ Thumbs.db
 .next
 next-env.d.ts
 apps/*/out
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+plan.txt
+crash.log
+crash.*.log
+
+# Env files (commit only the .env.example templates)
+.env
+.env.*
+!.env.example

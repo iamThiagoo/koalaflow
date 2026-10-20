@@ -10,7 +10,7 @@ even when the conversation with the user is in Portuguese.
 
 ## Workspace
 
-- Nx 23 + pnpm 11 workspaces (`apps/*`, `packages/*`), Node 24 (`.nvmrc`; run `nvm use`).
+- Nx 23 + pnpm 11 workspaces (`apps/*`, `packages/*`, `infra/terraform`), Node 24 (`.nvmrc`; run `nvm use`).
 - Package scope: `@koalaflow/*`. Use pnpm only (never npm/yarn).
 - Run tasks through Nx: `pnpm nx <target> <project>`, e.g. `pnpm nx dev @koalaflow/api`.
 
@@ -31,7 +31,12 @@ skips Next projects. Turbopack does not map `.js` imports to `.ts`, so Next apps
 modules through the `@/` alias (`src/*`) instead of relative `.js` paths.
 
 `apps/site` must stay fully static: no proxy, redirects, cookies, server actions or route handlers
-that read the request. It reads `SITE_URL`, `APP_URL` and `SALES_CONTACT_URL` at build time.
+that read the request. It reads `SITE_URL`, `APP_URL` and `SALES_CONTACT_URL` at build time, with
+no defaults in code: locally from `apps/site/.env` (copy `.env.example`), in CI from repository
+variables. `.env` and `.env.*` are git-ignored everywhere; only `.env.example` files are committed.
+`apps/site/Dockerfile` is a local preview only (nginx mirroring the CloudFront rules); production is
+S3 + CloudFront, with no container or ECR. Build it from the repo root:
+`docker build -f apps/site/Dockerfile -t koalaflow-site . && docker run --rm -p 8080:8080 koalaflow-site`.
 Its `tsconfig.json` excludes `.next/dev/types/validator.ts`: `next dev` generates it with unused
 imports when metadata routes exist, which breaks `noUnusedLocals`; `.next/types/validator.ts`
 still validates the routes.
@@ -41,6 +46,27 @@ still validates the routes.
 | Package | Purpose |
 |---|---|
 | `packages/ui` | Shared frontend design tokens (`@koalaflow/ui/theme.css`, a Tailwind 4 `@theme`) imported by `apps/app` and `apps/site`. Tokens only for now; add shared React components when both apps need the same one. Not a bounded context, so it does not use the `domain/application/infrastructure` layout. |
+
+### Infrastructure
+
+`infra/terraform` is the Nx project `@koalaflow/infra` (see its `README.md`). One AWS account,
+`us-east-1`, prod only for now.
+
+- Roots: `bootstrap/` (state bucket, applied by hand once), `global/` (Route 53 zone when
+  `domain_name` is set, GitHub OIDC provider, Terraform CI roles), `envs/<env>/<component>/`
+  (one state each; `envs/prod/site` today). Without a domain the site is served on its
+  CloudFront domain. Shared code lives in `modules/`. Roots read each other only through `terraform_remote_state`.
+- State: S3 backend with `use_lockfile = true` (no DynamoDB). Commit `.terraform.lock.hcl` locked
+  for `linux_amd64` and `darwin_arm64` (`terraform providers lock -platform=...`).
+- Its `lint` target runs `terraform fmt -check` + `validate` on every root, so Terraform must be
+  installed locally to push; `test` runs Vitest on the CloudFront Function.
+- CloudFront Functions are plain scripts with a top-level `handler` (no ES module syntax, no
+  `for...of`; the `cloudfront-js-2.0` runtime rejects it). Vitest runs them on Node, so check a
+  new construct with `aws cloudfront test-function` before relying on it.
+- CI uses GitHub OIDC roles, never static AWS keys. `.github/workflows/terraform.yml` plans on PRs
+  and applies on `main` behind the `production` environment; `.github/workflows/deploy-site.yml`
+  publishes `apps/site` to S3/CloudFront on push to `main`.
+- A new root must be added to the paths filter in `terraform.yml`, after the roots it reads.
 
 ## Architecture (DDD)
 
@@ -110,6 +136,7 @@ in a block comment with one `* Rule: ...` line per rule:
 | `pnpm check` | Biome format + lint + imports (add `--write` to fix) |
 | `pnpm exec openspec validate --all --strict --no-interactive` | Validate specs and changes |
 | `pnpm nx affected -t lint test build typecheck` | Affected projects |
+| `pnpm nx lint @koalaflow/infra` | Terraform fmt + validate for every root |
 
 - Husky `pre-push` runs Biome, OpenSpec validation and `nx affected` (no e2e).
 - CI (GitHub Actions) runs the same plus e2e, with `nrwl/nx-set-shas` for the affected base.

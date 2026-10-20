@@ -1,6 +1,7 @@
 packages:
   - apps/*
   - packages/*
+  - infra/terraform
 allowBuilds:
   '@swc/core': true
   nx: true
