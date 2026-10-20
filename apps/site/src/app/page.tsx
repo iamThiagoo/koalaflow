@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { CardTilt } from '@/components/card-tilt';
 import { Faq } from '@/components/faq';
 import { FinalInvitation } from '@/components/final-invitation';
 import { Hero } from '@/components/hero';
@@ -40,6 +41,7 @@ export default function HomePage() {
       </main>
       <SiteFooter content={home.footer} links={links} />
       <ScrollReveal />
+      <CardTilt />
     </>
   );
 }

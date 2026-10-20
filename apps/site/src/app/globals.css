@@ -50,6 +50,53 @@ html[data-reveal-ready] [data-revealed="in"] {
   --reveal-from: scale(0.9);
 }
 
+/**
+ * Rule: a [data-tilt] card leans at most 5deg toward the mouse and lifts 4px; the cursor side sinks.
+ * Rule: the shadow is a pseudo-element faded with opacity and shifted away from the cursor, so it never repaints.
+ * Rule: tilting follows the cursor in 200ms; leaving eases back flat in 600ms and leaves no transform behind.
+ */
+@media (hover: hover) and (pointer: fine) and (
+    prefers-reduced-motion: no-preference
+  ) {
+  [data-tilt] {
+    position: relative;
+    isolation: isolate;
+    transition: transform 600ms var(--ease-reveal);
+  }
+
+  [data-tilt]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    box-shadow: 0 20px 40px -16px
+      color-mix(in srgb, var(--color-primary-foreground) 18%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 600ms var(--ease-reveal),
+      transform 600ms var(--ease-reveal);
+  }
+
+  [data-tilt][data-tilting] {
+    transform: perspective(900px) rotateX(calc(var(--tilt-py, 0) * -5deg))
+      rotateY(calc(var(--tilt-px, 0) * 5deg)) translateY(-4px);
+    transition-duration: 200ms;
+    transition-timing-function: ease-out;
+  }
+
+  [data-tilt][data-tilting]::after {
+    opacity: 1;
+    transform: translate(
+      calc(var(--tilt-px, 0) * -6px),
+      calc(var(--tilt-py, 0) * -6px)
+    );
+    transition-duration: 200ms;
+    transition-timing-function: ease-out;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-enter,
   html[data-reveal-ready] [data-revealed="in"] {

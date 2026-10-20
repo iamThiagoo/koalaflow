@@ -14,6 +14,7 @@ const icons: Record<string, string> = {
 /**
  * Rule: from lg up the illustrations keep the 1440px Figma composition and only shrink below it;
  * the copy keeps its size, so the art never grows into the headline.
+ * Rule: past 1440px the hand stays pinned to the left edge and the koala to the right edge.
  */
 const u = (px: number) => `calc(${px} * var(--u))`;
 const desktopArt = { '--u': 'min(1px, 100cqw / 1440)' } as CSSProperties;
@@ -55,7 +56,7 @@ export function ProductProtection({
           height={1024}
           data-reveal="right"
           className="absolute max-w-none"
-          style={{ left: u(700), top: u(-10), width: u(900), height: u(600) }}
+          style={{ right: u(-160), top: u(-10), width: u(900), height: u(600) }}
         />
       </div>
       <div
@@ -104,22 +105,22 @@ export function ProductProtection({
 
         <ul className="grid w-full max-w-264 gap-3 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
           {content.items.map((item, index) => (
-            <li
-              key={item.icon}
-              data-reveal
-              style={revealDelay(index)}
-              className="flex items-center gap-4 rounded-3xl border border-border-card bg-surface px-5 py-3 text-left lg:flex-col lg:justify-center lg:px-6 lg:py-8 lg:text-center"
-            >
-              <Image
-                src={icons[item.icon]}
-                alt=""
-                width={256}
-                height={256}
-                className="size-14 shrink-0 lg:size-20"
-              />
-              <p className="text-base text-primary-foreground leading-6 lg:font-medium lg:tracking-[-0.2px]">
-                {item.text}
-              </p>
+            <li key={item.icon} data-reveal style={revealDelay(index)}>
+              <div
+                data-tilt
+                className="flex h-full items-center gap-4 rounded-3xl border border-border-card bg-surface px-5 py-3 text-left lg:flex-col lg:justify-center lg:px-6 lg:py-8 lg:text-center"
+              >
+                <Image
+                  src={icons[item.icon]}
+                  alt=""
+                  width={256}
+                  height={256}
+                  className="size-14 shrink-0 lg:size-20"
+                />
+                <p className="text-base text-primary-foreground leading-6 lg:font-medium lg:tracking-[-0.2px]">
+                  {item.text}
+                </p>
+              </div>
             </li>
           ))}
         </ul>
