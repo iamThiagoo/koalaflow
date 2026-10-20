@@ -1,109 +1,62 @@
-# New Nx Repository
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/koalaflow-logo-white.png">
+    <img src=".github/assets/koalaflow-logo.png" alt="Koalaflow" width="220">
+  </picture>
+</p>
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+<p align="center">Video hosting for protected business content.</p>
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+Koalaflow is a video hosting platform in the style of Vimeo and Panda Video, built for companies
+that sell or distribute private content. Videos are private by default and play only through
+signed URLs, inside embeds restricted to the customer's own domains.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/docs/technologies/typescript/introduction?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## Status
 
-🚀 If you haven't connected to Nx Cloud yet, [complete your setup here](https://cloud.nx.app/get-started). Get faster builds with remote caching, distributed task execution, and self-healing CI. [See how your workspace can benefit](#nx-cloud).
+The project is in early development.
 
-## Generate a library
+- **Marketing site** (`apps/site`): static landing page in Portuguese, deployed to S3 and
+  CloudFront.
+- **Infrastructure** (`infra/terraform`): AWS resources managed with Terraform, applied from
+  GitHub Actions through OIDC roles, with a monthly cost budget alert.
+- **API** (`apps/api`) and **creator dashboard** (`apps/app`): NestJS and Next.js apps set up,
+  with no product features yet.
 
-```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
-```
+The planned video flow is: direct browser upload to S3, FFmpeg transcoding to HLS in a worker,
+signed delivery through CloudFront, and playback in an embedded Video.js player.
 
-## Run tasks
+## Structure
 
-To build the library use:
+| Path | Description |
+| --- | --- |
+| `apps/site` | Public marketing site, Next.js static export |
+| `apps/app` | Creator dashboard and embed player, Next.js |
+| `apps/api` | Backend API, NestJS |
+| `packages/ui` | Shared design tokens for Tailwind |
+| `infra/terraform` | AWS infrastructure ([README](infra/terraform/README.md)) |
+| `openspec` | Feature specifications and change proposals |
 
-```sh
-npx nx run pkg1:build
-```
+## Getting started
 
-To run any task with Nx use:
-
-```sh
-npx nx run <project-name>:<target>
-```
-
-These targets are either [inferred automatically](https://nx.dev/docs/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
-
-[More about running tasks in the docs &raquo;](https://nx.dev/docs/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Versioning and releasing
-
-To version and release the library use
-
-```
-npx nx release
-```
-
-Pass `--dry-run` to see what would happen without actually releasing the library.
-
-[Learn more about Nx release &raquo;](https://nx.dev/docs/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Keep TypeScript project references up to date
-
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
-
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
+Requires Node 24 and pnpm 11.
 
 ```sh
-npx nx sync
+nvm use
+pnpm install
+cp apps/site/.env.example apps/site/.env
+pnpm nx dev @koalaflow/site
 ```
 
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
+The site runs on `http://localhost:3002`. The dashboard (`@koalaflow/app`) and the API
+(`@koalaflow/api`) start the same way, on ports 3001 and 3000.
+
+To run the checks used in CI:
 
 ```sh
-npx nx sync:check
+pnpm check
+pnpm nx affected -t lint test build typecheck
 ```
 
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
+Linting `@koalaflow/infra` also requires Terraform installed locally.
 
-## Nx Cloud
-
-Nx Cloud ensures a [fast and scalable CI](https://nx.dev/nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/docs/features/ci-features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/docs/features/ci-features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/docs/features/ci-features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/docs/features/ci-features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Set up CI (non-Github Actions CI)
-
-**Note:** This is only required if your CI provider is not GitHub Actions.
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/docs/features/ci-features?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/docs/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## 🔗 Learn More
-
-- [Nx Documentation](https://nx.dev/docs)
-- [Crafting Your Workspace Tutorial](https://nx.dev/docs/getting-started/tutorials/crafting-your-workspace)
-- [Module Boundaries](https://nx.dev/docs/features/enforce-module-boundaries)
-- [Releasing Packages](https://nx.dev/docs/features/manage-releases)
-- [Nx Plugins](https://nx.dev/docs/concepts/nx-plugins)
-- [Nx Cloud](https://nx.dev/nx-cloud)
-
-## 💬 Community
-
-Join the Nx community:
-
-- [Discord](https://go.nx.dev/community)
-- [X (Twitter)](https://twitter.com/nxdevtools)
-- [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [YouTube](https://www.youtube.com/@nxdevtools)
-- [Blog](https://nx.dev/blog)
+Project conventions are described in [CLAUDE.md](CLAUDE.md).
