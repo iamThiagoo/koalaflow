@@ -5,6 +5,9 @@ context: |
   All artifacts, code, identifiers and commit messages must be written in English,
   even when the conversation with the user is in another language.
 
+  Commits: one line, Conventional Commits "<type>(<scope>): <subject>" (e.g. feat(infra): ..., feat(site): ...),
+  lowercase imperative subject, no body, no Co-Authored-By; one commit per area (infra, site, app, api, worker, ui).
+
   Product: Koalaflow, a video hosting platform (Vimeo / Panda Video style):
   upload -> FFmpeg transcoding to HLS -> signed CloudFront delivery -> embedded player.
 

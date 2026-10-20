@@ -8,6 +8,22 @@ upload → FFmpeg transcoding to HLS → signed CloudFront delivery → embedded
 Code, identifiers, comments, commit messages and OpenSpec artifacts are written in English,
 even when the conversation with the user is in Portuguese.
 
+## Commits
+
+One line in Conventional Commits form, `<type>(<scope>): <subject>`: lowercase, imperative, no
+trailing period. No body and no `Co-Authored-By` trailer.
+
+- Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `ci`.
+- Scope: the area changed, e.g. `infra`, `site`, `app`, `api`, `worker`, `ui`. Omit it only for
+  changes that span the whole workspace (`chore: switch to pnpm`) or only touch CI (`ci: ...`).
+- One commit per area: changes to `infra` and `site` go in separate commits.
+
+```
+feat(infra): add monthly aws cost budget alert
+fix(site): read build urls from apps/site/.env
+ci: scan for secrets with gitleaks
+```
+
 ## Workspace
 
 - Nx 23 + pnpm 11 workspaces (`apps/*`, `packages/*`, `infra/terraform`), Node 24 (`.nvmrc`; run `nvm use`).
