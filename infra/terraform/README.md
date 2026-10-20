@@ -56,6 +56,11 @@ Run from `infra/terraform` with admin credentials for the target account.
    immutable subjects it includes the owner and repository IDs; a wrong prefix makes every CI role
    fail with `Not authorized to perform sts:AssumeRoleWithWebIdentity`.
 
+   Budget alert emails are personal data and stay out of the repository. Create
+   `global/local.auto.tfvars` (git-ignored) with `budget_alert_emails = ["you@example.com"]` and
+   the repository secret `BUDGET_ALERT_EMAILS` with the same list as JSON (`["you@example.com"]`);
+   CI passes it as `TF_VAR_budget_alert_emails`.
+
    ```sh
    terraform -chdir=global init
    terraform -chdir=global apply

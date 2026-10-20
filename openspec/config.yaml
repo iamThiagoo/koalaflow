@@ -25,6 +25,12 @@ context: |
   - Single AWS account, us-east-1, prod only for now; S3 remote state with native locking
   - CI authenticates to AWS with GitHub OIDC roles only (no static keys); Terraform plans on PRs, applies on main behind the production environment
 
+  Secrets and personal data:
+  - Never in the repository (gitleaks runs in pre-push and CI), never in Terraform variables or state, never in build-time env of the Next apps
+  - Apps read secrets at runtime from Secrets Manager or SSM; private keys (e.g. CloudFront signed URLs) are created outside Terraform
+  - Sensitive CI inputs are GitHub secrets, not repository variables (variables are printed in logs)
+  - The Terraform plan role may read the state but is denied application data (objects, secrets, parameters, KMS decrypt, items, logs)
+
   Product decisions:
   - B2B protected content (Panda style): videos private by default, domain-restricted embeds,
     signed URLs, no public discovery pages

@@ -18,3 +18,29 @@ variable "github_subject_prefix" {
     error_message = "github_subject_prefix must start with \"repo:\"."
   }
 }
+
+variable "monthly_budget_usd" {
+  description = "Monthly AWS cost budget in USD; alerts are sent as spend approaches it."
+  type        = number
+
+  validation {
+    condition     = var.monthly_budget_usd > 0
+    error_message = "monthly_budget_usd must be greater than zero."
+  }
+}
+
+variable "budget_alert_emails" {
+  description = "Email addresses that receive budget alerts. Kept out of the repository: CI reads the BUDGET_ALERT_EMAILS secret, local runs read global/local.auto.tfvars."
+  type        = list(string)
+  sensitive   = true
+
+  validation {
+    condition     = length(var.budget_alert_emails) > 0
+    error_message = "budget_alert_emails needs at least one address."
+  }
+}
+
+variable "state_bucket" {
+  description = "Terraform state bucket; the only bucket whose objects the plan role may read."
+  type        = string
+}

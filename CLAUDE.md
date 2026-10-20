@@ -100,6 +100,23 @@ Open decisions — ask the user, don't assume:
   (`true` only if the script is needed); otherwise `pnpm install` fails in CI.
 - Keep `.claude/settings.json` expanded (Biome override `expand: "always"`); Nx compares its text.
 
+## Secrets and personal data
+
+- Never commit secrets or personal data. `.env`/`.env.*` (except `.env.example`) and
+  `local.auto.tfvars` are git-ignored; gitleaks scans pushed commits in `pre-push`
+  (`brew install gitleaks`) and the whole history in CI.
+- Terraform state keeps every value in plain text; `sensitive = true` only hides CLI output. Keep
+  secrets out of state: RDS with `manage_master_user_password`, private keys (e.g. the CloudFront
+  signed-URL key) generated outside Terraform and stored in Secrets Manager, Terraform gets only
+  the public key.
+- Apps read secrets at runtime from Secrets Manager or SSM, never from `tfvars` or build-time env.
+  Anything a Next app reads at build time, and every `NEXT_PUBLIC_*`, ends up in public files.
+- GitHub repository variables are printed in workflow logs; sensitive values go in secrets
+  (e.g. `BUDGET_ALERT_EMAILS` → `TF_VAR_budget_alert_emails`, a `sensitive` variable).
+- The Terraform plan role reads resource configuration and the state, but is explicitly denied
+  application data (objects outside the state bucket, secrets, parameters, KMS decrypt, table
+  items, logs). A data source that needs such data requires changing `plan_data_guard` in `global/`.
+
 ## Code comments
 
 Comments about business rules or design decisions are simple, short and objective,
@@ -138,8 +155,10 @@ in a block comment with one `* Rule: ...` line per rule:
 | `pnpm nx affected -t lint test build typecheck` | Affected projects |
 | `pnpm nx lint @koalaflow/infra` | Terraform fmt + validate for every root |
 
-- Husky `pre-push` runs Biome, OpenSpec validation and `nx affected` (no e2e).
-- CI (GitHub Actions) runs the same plus e2e, with `nrwl/nx-set-shas` for the affected base.
+- Husky `pre-push` runs gitleaks (when installed), Biome, OpenSpec validation and `nx affected`
+  (no e2e).
+- CI (GitHub Actions) runs the same plus e2e, with `nrwl/nx-set-shas` for the affected base, and a
+  `secrets` job that runs gitleaks over the full history.
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->

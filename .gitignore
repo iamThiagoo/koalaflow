@@ -61,6 +61,7 @@ tfplan
 plan.txt
 crash.log
 crash.*.log
+local.auto.tfvars
 
 # Env files (commit only the .env.example templates)
 .env

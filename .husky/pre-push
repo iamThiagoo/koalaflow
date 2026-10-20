@@ -1,6 +1,12 @@
 base=origin/main
 git rev-parse --verify -q "$base" >/dev/null || base=HEAD~1
 
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks git --no-banner --redact --log-opts="$base..HEAD"
+else
+  echo "pre-push: gitleaks not installed (brew install gitleaks); CI still scans for secrets." >&2
+fi
+
 pnpm exec biome ci .
 OPENSPEC_TELEMETRY=0 pnpm exec openspec validate --all --strict --no-interactive
 pnpm exec nx affected -t lint test build typecheck --base="$base" --head=HEAD
