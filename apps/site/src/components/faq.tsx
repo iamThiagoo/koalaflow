@@ -2,10 +2,6 @@ import { ButtonLink } from '@/components/button-link';
 import type { HomeContent } from '@/content/home';
 import { revealDelay } from '@/motion';
 
-/**
- * "FAQ" (Figma 31:172 desktop, 31:216 mobile) built on native <details>, so it works without JavaScript.
- * Rule: one answer is open at a time, starting with the one the design shows open.
- */
 export function Faq({
   content,
   appUrl,

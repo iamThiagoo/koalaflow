@@ -3,11 +3,6 @@
 import { useEffect } from 'react';
 import { pointerOffset } from '@/tilt';
 
-/**
- * Tilts every [data-tilt] card toward the mouse; the transform and shadow live in globals.css.
- * Rule: only a fine, hovering pointer without reduced motion gets the effect; touch never tilts.
- * Rule: pointer moves are batched to one style write per frame and never re-render React.
- */
 export function CardTilt() {
   useEffect(() => {
     const query = window.matchMedia(

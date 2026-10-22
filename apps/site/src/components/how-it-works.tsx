@@ -1,10 +1,6 @@
 import type { HomeContent } from '@/content/home';
 import { revealDelay } from '@/motion';
 
-/**
- * "How it works" (Figma 17:2642 desktop, 17:2802 mobile): a horizontal track on desktop,
- * a vertical one on mobile.
- */
 export function HowItWorks({
   content,
 }: {

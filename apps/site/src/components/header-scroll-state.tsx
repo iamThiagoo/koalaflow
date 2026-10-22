@@ -3,10 +3,6 @@
 import { useEffect } from 'react';
 import { isHeaderCompact } from '@/motion';
 
-/**
- * Marks `<html data-scrolled>` once the page leaves the top, so the fixed header compacts.
- * Rule: a passive scroll listener only toggles one attribute; the header animates in CSS.
- */
 export function HeaderScrollState() {
   useEffect(() => {
     const root = document.documentElement;

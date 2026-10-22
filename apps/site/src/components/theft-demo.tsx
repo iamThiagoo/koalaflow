@@ -20,13 +20,6 @@ type DemoContent = HomeContent['protection']['demo'];
 const actionButton =
   'inline-flex min-h-10 items-center justify-center rounded-full border border-border px-4 py-2 font-semibold text-primary-foreground text-sm leading-5 transition-colors hover:bg-surface-subtle focus-visible:outline-2 focus-visible:outline-primary-strong focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
 
-/**
- * "Tenta roubar esse vídeo": the protection CTA as a <details> disclosure.
- * Rule: the server renders the static version, so the CTA works without JavaScript; the
- * interactive demo replaces it after mount.
- * Rule: the countdown starts when the demo opens and stops when it closes.
- * Rule: no clipboard access and no network requests; copy and paste are simulated.
- */
 export function TheftDemo({
   cta,
   content,

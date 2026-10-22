@@ -66,11 +66,6 @@ function Line({
   );
 }
 
-/**
- * "Quanto custa?" (Figma 116:1099 desktop, 116:1191 mobile): the interactive pricing calculator.
- * Rule: every number comes from the pricing module; this component only renders it.
- * Rule: the static HTML shows the default estimate; the sliders are enabled once the page hydrates.
- */
 export function Pricing({
   content,
   appUrl,

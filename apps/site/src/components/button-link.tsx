@@ -5,9 +5,6 @@ const sizes = {
   sm: 'h-10 px-3 text-sm leading-5',
 } as const;
 
-/**
- * Koalaflow Button · Primary (Figma 6:8605): eucalyptus pill, no shadow.
- */
 export function ButtonLink({
   href,
   size = 'md',

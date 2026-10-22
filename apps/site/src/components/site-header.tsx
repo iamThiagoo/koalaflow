@@ -5,14 +5,6 @@ import { MobileHeader } from '@/components/mobile-header';
 import type { HomeContent } from '@/content/home';
 import { type LinkContext, resolveHref } from '@/links';
 
-/**
- * Floating header (Figma 26:586) from lg up; the mobile header (Figma 22:610) below it.
- * Rule: the header is fixed at every size, starting where it sits in the hero card so it never jumps.
- * Rule: it stays above the headline chip menus (z-30) that scroll under it.
- * Rule: once the page leaves the top it compacts in 300ms: it slides closer to the edge (translate
- * only, no layout) and the pill gets a more solid background and a shadow to stay legible over
- * dark sections. Scrolling back to the top reverses it.
- */
 export function SiteHeader({
   content,
   links,

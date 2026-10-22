@@ -1,8 +1,3 @@
-/**
- * Rule: brand tokens live here only; apps import this file instead of redefining them.
- * Rule: --font-brand and --font-handwriting are set by each app's next/font loader; the stacks fall back to system fonts.
- * Rule: color names mirror the Koalaflow Figma variables (color/<name>) so design and code stay traceable.
- */
 @theme inline {
   --font-sans:
     var(--font-brand, ui-sans-serif), ui-sans-serif, system-ui, sans-serif,

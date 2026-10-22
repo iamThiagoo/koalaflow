@@ -4,9 +4,6 @@ import { ButtonLink } from '@/components/button-link';
 import type { HomeContent } from '@/content/home';
 import { revealDelay } from '@/motion';
 
-/**
- * Rule: on desktop the illustration keeps the 1440px Figma composition and only shrinks below it.
- */
 const u = (px: number) => `calc(${px} * var(--u))`;
 const desktopArt = { '--u': 'min(1px, 100cqw / 1440)' } as CSSProperties;
 
@@ -40,9 +37,6 @@ function ArtImage({
   );
 }
 
-/**
- * "Final invitation" (Figma 19:506 desktop, 19:520 mobile).
- */
 export function FinalInvitation({
   content,
   appUrl,

@@ -11,17 +11,9 @@ const icons: Record<string, string> = {
   signal: '/landing/icon-signal.webp',
 };
 
-/**
- * Rule: from lg up the illustrations keep the 1440px Figma composition and only shrink below it;
- * the copy keeps its size, so the art never grows into the headline.
- * Rule: past 1440px the hand stays pinned to the left edge and the koala to the right edge.
- */
 const u = (px: number) => `calc(${px} * var(--u))`;
 const desktopArt = { '--u': 'min(1px, 100cqw / 1440)' } as CSSProperties;
 
-/**
- * "Product protection", the clinging koala (Figma 80:380 desktop, 80:405 mobile).
- */
 export function ProductProtection({
   content,
   appUrl,

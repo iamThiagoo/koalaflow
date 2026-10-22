@@ -23,7 +23,7 @@ context: |
   - domain has no framework or infrastructure dependencies
   - Events inside a context: @nestjs/cqrs EventBus; between contexts/services: outbox table -> SQS
   - Postgres is the main database
-  - AWS via Terraform, Docker; LocalStack for local S3/SQS
+  - AWS via Terraform, Docker; Floci (open-source AWS emulator) for local S3/SQS
   - infra/terraform (Nx project @koalaflow/infra): roots bootstrap/, global/, envs/<env>/<component>/ (one state each), shared modules/
   - Single AWS account, us-east-1, prod only for now; S3 remote state with native locking
   - CI authenticates to AWS with GitHub OIDC roles only (no static keys); Terraform plans on PRs, applies on main behind the production environment
@@ -46,6 +46,8 @@ context: |
   - B2B protected content (Panda style): videos private by default, domain-restricted embeds,
     signed URLs, no public discovery pages
   - Unit tests: Vitest + SWC
+  - Auth: Better Auth (self-hosted, data in Postgres), owned by the identity context
+  - No MongoDB: Postgres now, ClickHouse later for playback analytics
 
   Constraints:
   - Relative imports use the .js extension (ESM); Next apps use the @/ alias instead

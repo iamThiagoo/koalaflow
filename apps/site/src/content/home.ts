@@ -6,10 +6,6 @@ export interface ContentLink {
   to?: LinkTarget;
 }
 
-/**
- * Rule: the site is Portuguese-only; all visible copy lives in this file.
- * Rule: copy mirrors the Koalaflow landing page in Figma; bracketed notes are open items from the design.
- */
 export const home = {
   metadata: {
     title: 'Koalaflow: hospedagem de vídeos protegidos para empresas',

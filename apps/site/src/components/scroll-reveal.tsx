@@ -2,10 +2,6 @@
 
 import { useEffect } from 'react';
 
-/**
- * Reveals every [data-reveal] element the first time it scrolls into view.
- * Rule: reduced-motion users skip the observer entirely, so nothing is ever hidden for them.
- */
 export function ScrollReveal() {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;

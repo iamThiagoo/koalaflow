@@ -15,12 +15,6 @@ const thumbs = {
   play: '/landing/thumb-play.png',
 } as const;
 
-/**
- * Koalaflow/usage-slider (Figma 115:1140): a log-scale slider with a mascot thumb and a live tooltip.
- * Rule: a transparent native range input does the dragging, keyboard and screen reader work;
- * the track, fill, mascot and tooltip are decorative and follow its position.
- * Rule: the thumb follows the pointer with no transition while dragging.
- */
 export function UsageSlider({
   label,
   value,

@@ -13,9 +13,6 @@ export function Logo() {
   );
 }
 
-/**
- * Rule: the white logo is the original mark used as a luminance mask, as in the Figma footer.
- */
 export function LogoWhite() {
   return (
     <span

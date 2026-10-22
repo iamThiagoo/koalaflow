@@ -2,10 +2,6 @@
 
 import { type RefObject, useEffect } from 'react';
 
-/**
- * Closes an open popover on a pointer press outside `root` or on Escape,
- * returning focus to `trigger` after Escape.
- */
 export function useDismiss(
   open: boolean,
   close: () => void,

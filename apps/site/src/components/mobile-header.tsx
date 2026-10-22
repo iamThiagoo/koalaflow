@@ -10,9 +10,6 @@ import type { HomeContent } from '@/content/home';
 const menuItemClass =
   'flex h-11 items-center rounded-lg px-4 text-base text-text-primary leading-6 transition-colors hover:bg-surface-subtle focus-visible:bg-surface-subtle focus-visible:outline-none';
 
-/**
- * Koalaflow/mobile-header (Figma 22:610): pill bar with a dropdown menu, fixed by `SiteHeader`.
- */
 export function MobileHeader({
   className,
   content,

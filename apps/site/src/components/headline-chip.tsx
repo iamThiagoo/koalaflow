@@ -23,19 +23,12 @@ const tones = {
   },
 } as const;
 
-/**
- * Rule: below md, long options shrink from the design's 32px so the chip stays on one line;
- * the size assumes ~0.54em per character and 136px of chip padding, chevron and margins.
- */
 function mobileFontSize(value: string): CSSProperties {
   return {
     '--chip-font': `clamp(16px, calc((100vw - 136px) / ${(value.length * 0.54).toFixed(2)}), 32px)`,
   } as CSSProperties;
 }
 
-/**
- * Koalaflow/headline-chip (Figma 26:869): an inline selector inside the hero headline.
- */
 export function HeadlineChip({
   label,
   options,

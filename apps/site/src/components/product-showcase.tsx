@@ -5,10 +5,6 @@ import { enterDelay, heroEntrance } from '@/motion';
 
 type Showcase = HomeContent['hero']['showcase'];
 
-/**
- * Rule: the showcase is a fixed Figma composition; every length scales with the bezel width
- * (--u = one design pixel) so pills, player and annotation keep their relative positions.
- */
 const u = (px: number) => `calc(${px} * var(--u))`;
 
 function scale(designWidth: number): CSSProperties {
@@ -96,9 +92,6 @@ function Annotation({
   );
 }
 
-/**
- * "Floating playback" (Figma 26:919) and its scaled copy inside the mobile dashboard (Figma 30:1693).
- */
 function Player({
   player,
   box,
@@ -177,9 +170,6 @@ function Player({
   );
 }
 
-/**
- * "Product showcase · Bezel" (Figma 26:607 desktop, 26:192 mobile). The hero card crops its bottom.
- */
 export function ProductShowcase({ content }: { content: Showcase }) {
   const { pills } = content;
   return (

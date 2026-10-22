@@ -5,13 +5,6 @@ import { ProductShowcase } from '@/components/product-showcase';
 import type { HomeContent } from '@/content/home';
 import { enterDelay, heroEntrance } from '@/motion';
 
-/**
- * "Hero region" (Figma 26:583 desktop, 26:181 mobile).
- * Rule: line breaks follow the Figma lines: two on desktop (xl), three on tablet, six on mobile.
- * Rule: on desktop, longer chip options wrap before "só" instead of overflowing.
- * Rule: from md the card ends inside the first screen, with the same 24px gap below as above;
- * the showcase is cropped by the card (with a bottom fade) and never shrinks past 640px.
- */
 export function Hero({
   content,
   header,

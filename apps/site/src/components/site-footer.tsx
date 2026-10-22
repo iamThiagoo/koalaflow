@@ -11,15 +11,8 @@ const socialIcons: Record<string, string> = {
   github: '/landing/github.svg',
 };
 
-/**
- * Rule: Suporte and Legal take a full row on mobile, as in the Figma mobile footer.
- */
 const fullRowOnMobile = new Set(['suporte', 'legal']);
 
-/**
- * "Footer" (Figma 17:2680 desktop, 17:2839 mobile). The panel overlaps the section above it.
- * Rule: items without a destination yet render as text, not as dead links.
- */
 export function SiteFooter({
   content,
   links,

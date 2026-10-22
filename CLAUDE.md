@@ -93,16 +93,14 @@ still validates the routes.
   Between contexts/services: outbox table in the same transaction → relay → SQS (with DLQ).
 - Postgres is the main database (MikroORM recommended). Redis only for cache/rate limit.
 - Uploads go straight from the browser to S3 via presigned multipart URLs, never through the api.
-- Infra: AWS via Terraform (`infra/terraform`), Docker, docker-compose with LocalStack (S3/SQS) locally.
+- Infra: AWS via Terraform (`infra/terraform`), Docker, docker-compose with Floci (S3/SQS, `floci/floci` image, port 4566) locally.
 
 Decided:
 - Product model: Panda-style B2B protected content (private by default, domain-restricted embeds,
   signed URLs; no public discovery pages).
 - Unit test runner: Vitest + SWC (SWC keeps Nest decorator metadata).
-
-Open decisions — ask the user, don't assume:
-- MongoDB: recommended to leave it out (Postgres now, ClickHouse later for playback analytics).
-- Auth provider.
+- Auth: Better Auth (self-hosted, data in Postgres), owned by the `identity` context.
+- No MongoDB: Postgres now, ClickHouse later for playback analytics.
 
 ## Constraints
 
