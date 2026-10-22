@@ -161,6 +161,55 @@ export const home = {
       },
     ],
   },
+  pricing: {
+    anchor: 'precos',
+    titleAccent: 'Quanto custa?',
+    title: 'Arraste e descubra.',
+    subtitle:
+      'Você paga pelos minutos que seus alunos assistem e pelas horas que guarda. Sem plano engessado e sem taxa por domínio.',
+    minutes: {
+      label: 'Minutos assistidos por mês',
+      value: '{value} min',
+      tooltip: '{value} min',
+      valueText: '{value} minutos assistidos por mês',
+      tick: '{value}',
+      hint: {
+        one: '≈ {count} aluno assistindo {hours} h por mês',
+        other: '≈ {count} alunos assistindo {hours} h por mês',
+      },
+    },
+    hours: {
+      label: 'Horas de vídeo guardadas',
+      value: '{value} h',
+      tooltip: '{value} horas',
+      valueText: '{value} horas guardadas',
+      tick: '{value} h',
+      hint: {
+        one: '≈ {count} curso de {hours} horas',
+        other: '≈ {count} cursos de {hours} horas',
+      },
+    },
+    estimate: {
+      label: 'Seu custo estimado',
+      perMonth: '/mês',
+      perStudent: '≈ {value} por aluno por mês',
+      delivery: 'Entrega',
+      deliveryDetail: '{minutes} min × {price}',
+      storage: 'Armazenamento',
+      storageDetail: '{hours} h × {price}',
+      allowance: 'Franquia',
+      allowanceDetail: '{minutes} min grátis todo mês',
+      included: [
+        'Domínios ilimitados e URLs assinadas',
+        'Analytics de retenção',
+        'Sem anúncios e sem fidelidade',
+      ],
+      primaryCta: 'Começar agora',
+      salesCta: 'Volume maior? Falar com vendas',
+    },
+    finePrint:
+      'Valores estimados. Você paga só o que usar, proporcional ao mês.',
+  },
   faq: {
     titleAccent: 'Ficou alguma dúvida?',
     title: 'A gente responde.',
@@ -247,7 +296,7 @@ export const home = {
         id: 'empresa',
         title: 'Empresa',
         links: [
-          { label: 'Preços' },
+          { label: 'Preços', to: '#precos' },
           { label: 'Falar com vendas', to: 'sales' },
           { label: 'Blog' },
         ],

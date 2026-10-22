@@ -107,3 +107,25 @@ html[data-reveal-ready] [data-revealed="in"] {
     opacity: 1;
   }
 }
+
+/**
+ * Rule: the usage slider's native thumb is invisible but as wide as the 56px mascot drawn over it,
+ * so the native input and the visual thumb share the same travel from end to end.
+ */
+.usage-range {
+  appearance: none;
+  background: transparent;
+}
+
+.usage-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 56px;
+  height: 56px;
+}
+
+.usage-range::-moz-range-thumb {
+  width: 56px;
+  height: 56px;
+  border: 0;
+  background: transparent;
+}
