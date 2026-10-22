@@ -26,9 +26,8 @@ data "aws_iam_policy_document" "trust" {
 }
 
 resource "aws_iam_role" "this" {
-  name                 = var.name
-  assume_role_policy   = data.aws_iam_policy_document.trust.json
-  max_session_duration = var.max_session_duration
+  name               = var.name
+  assume_role_policy = data.aws_iam_policy_document.trust.json
 }
 
 resource "aws_iam_role_policy_attachment" "managed" {

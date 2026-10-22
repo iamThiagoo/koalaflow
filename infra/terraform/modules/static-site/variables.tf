@@ -40,9 +40,3 @@ variable "price_class" {
   type        = string
   default     = "PriceClass_All"
 }
-
-variable "noncurrent_version_expiration_days" {
-  description = "Days to keep replaced or deleted object versions."
-  type        = number
-  default     = 30
-}

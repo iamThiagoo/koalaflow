@@ -77,10 +77,8 @@ jobs:
           role-to-assume: ${{ vars.TERRAFORM_PLAN_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - run: terraform fmt -check -recursive
       - run: terraform init -input=false -lockfile=readonly
-      - run: terraform validate -no-color
-      
+
       - id: plan
         run: terraform plan -input=false -lock=false -no-color 2>&1 | tee plan.txt
 

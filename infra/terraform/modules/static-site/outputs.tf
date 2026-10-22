@@ -18,11 +18,6 @@ output "distribution_arn" {
   value       = aws_cloudfront_distribution.site.arn
 }
 
-output "distribution_domain_name" {
-  description = "CloudFront domain, e.g. d123.cloudfront.net."
-  value       = aws_cloudfront_distribution.site.domain_name
-}
-
 output "url" {
   description = "Canonical site URL: the domain, or the CloudFront domain when none is set."
   value = (

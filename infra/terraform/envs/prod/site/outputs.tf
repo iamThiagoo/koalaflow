@@ -17,8 +17,3 @@ output "site_url" {
   description = "Set as the SITE_URL repository variable."
   value       = module.site.url
 }
-
-output "distribution_domain_name" {
-  description = "CloudFront domain, useful before DNS propagates."
-  value       = module.site.distribution_domain_name
-}
