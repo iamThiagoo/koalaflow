@@ -11,10 +11,10 @@
 }
 
 @theme {
-  --color-primary: #7fd6b0;
-  --color-primary-hover: #9fe0c4;
-  --color-primary-soft: #e5f7ef;
-  --color-primary-strong: #338362;
+  --color-primary: #86dc4f;
+  --color-primary-hover: #a2e878;
+  --color-primary-soft: #eefbe4;
+  --color-primary-strong: #347a14;
   --color-primary-foreground: #1e2a3a;
 
   --color-text-primary: #1f4647;

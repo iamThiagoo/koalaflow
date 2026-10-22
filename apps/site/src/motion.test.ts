@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { enterDelay, revealDelay, staggerStepMs } from '@/motion';
+import {
+  enterDelay,
+  headerCompactAfterPx,
+  isHeaderCompact,
+  revealDelay,
+  staggerStepMs,
+} from '@/motion';
 
 describe('revealDelay', () => {
   it('starts the first element of a group without delay', () => {
@@ -20,5 +26,19 @@ describe('revealDelay', () => {
 describe('enterDelay', () => {
   it('sets the animation delay for page-load entrances', () => {
     expect(enterDelay(240)).toEqual({ animationDelay: '240ms' });
+  });
+});
+
+describe('isHeaderCompact', () => {
+  it('keeps the header expanded at the top of the page', () => {
+    expect(isHeaderCompact(0)).toBe(false);
+  });
+
+  it('ignores small scroll jitter up to the threshold', () => {
+    expect(isHeaderCompact(headerCompactAfterPx)).toBe(false);
+  });
+
+  it('compacts once the page scrolls past the threshold', () => {
+    expect(isHeaderCompact(headerCompactAfterPx + 1)).toBe(true);
   });
 });

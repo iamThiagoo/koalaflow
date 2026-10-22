@@ -7,7 +7,10 @@ import { enterDelay, heroEntrance } from '@/motion';
 
 /**
  * "Hero region" (Figma 26:583 desktop, 26:181 mobile).
- * Rule: line breaks follow the Figma lines: three on desktop, six on mobile.
+ * Rule: line breaks follow the Figma lines: two on desktop (xl), three on tablet, six on mobile.
+ * Rule: on desktop, longer chip options wrap before "só" instead of overflowing.
+ * Rule: from md the card ends inside the first screen, with the same 24px gap below as above;
+ * the showcase is cropped by the card (with a bottom fade) and never shrinks past 640px.
  */
 export function Hero({
   content,
@@ -20,17 +23,17 @@ export function Hero({
 }) {
   const { headline } = content;
   return (
-    <section className="bg-surface p-2 md:p-6">
-      <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-b from-[#eefaf4] to-[#d6f3e5] md:rounded-[56px]">
+    <section className="bg-surface p-2 md:p-6 mx-auto max-w-380">
+      <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-b from-[#f5fcef] to-[#dcf5c9] md:max-h-[max(calc(100svh-48px),640px)] md:rounded-[56px] md:after:pointer-events-none md:after:absolute md:after:inset-x-0 md:after:bottom-0 md:after:h-25 md:after:bg-gradient-to-b md:after:from-transparent md:after:to-black/3 md:after:content-['']">
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-[radial-gradient(62.5%_90.9%_at_50%_80%,rgba(127,214,176,0.4),rgba(127,214,176,0))]"
+          className="absolute inset-0 bg-[radial-gradient(62.5%_90.9%_at_50%_80%,rgba(134,220,79,0.4),rgba(134,220,79,0))]"
         />
         {header}
         <div className="relative flex flex-col items-center gap-4 px-5 pt-36 text-center md:pt-54">
           <h1
             style={enterDelay(heroEntrance.headline)}
-            className="-my-0.5 max-w-245 animate-enter font-bold text-[32px] text-text-primary leading-11 tracking-[-2px] md:-my-1 md:text-[40px] md:leading-14"
+            className="-my-0.5 max-w-245 animate-enter font-bold text-[32px] text-text-primary leading-11 tracking-[-2px] md:-my-1 md:text-[40px] md:leading-14 xl:max-w-none"
           >
             {headline.lead}
             <br className="md:hidden" />
@@ -40,8 +43,8 @@ export function Hero({
               label={content.contentTypeLabel}
               options={content.contentTypes}
             />
-            <br className="hidden md:inline" />
-            <span className="ml-2 md:ml-0">{headline.bridge}</span>
+            <br className="hidden md:inline xl:hidden" />
+            <span className="ml-2 md:ml-0 xl:ml-2.5">{headline.bridge}</span>
             <br className="md:hidden" /> {headline.bridgeTail}{' '}
             <span className="whitespace-nowrap">
               <HeadlineChip

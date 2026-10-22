@@ -57,7 +57,7 @@ export function FinalInvitation({
     >
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[radial-gradient(49%_60%_at_50%_70%,rgba(127,214,176,0.42),rgba(127,214,176,0))]"
+        className="absolute inset-0 bg-[radial-gradient(49%_60%_at_50%_70%,rgba(134,220,79,0.42),rgba(134,220,79,0))]"
       />
       <div className="relative mx-auto flex max-w-[calc(820px+48px)] flex-col items-center gap-6 px-6 text-center">
         <h2

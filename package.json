@@ -1,12 +1,15 @@
 {
   "name": "@koalaflow/source",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "scripts": {
     "check": "biome check .",
     "format": "biome format --write .",
     "lint": "biome lint .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "api": "nx dev @koalaflow/api",
+    "app": "nx dev @koalaflow/app",
+    "site": "nx dev @koalaflow/site"
   },
   "private": true,
   "devDependencies": {

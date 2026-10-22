@@ -46,7 +46,7 @@ export function Faq({
           </p>
           <a
             href={supportUrl}
-            className="text-sm text-text-primary leading-5 underline transition-colors hover:text-primary-strong"
+            className="text-sm w-full text-center text-text-secondary text-xs leading-4 md:w-80 text-text-primary leading-5 underline transition-colors hover:text-primary-strong"
           >
             {content.supportLink}
           </a>

@@ -11,7 +11,7 @@ const menuItemClass =
   'flex h-11 items-center rounded-lg px-4 text-base text-text-primary leading-6 transition-colors hover:bg-surface-subtle focus-visible:bg-surface-subtle focus-visible:outline-none';
 
 /**
- * Koalaflow/mobile-header (Figma 22:610): pill bar with a dropdown menu.
+ * Koalaflow/mobile-header (Figma 22:610): pill bar with a dropdown menu, fixed by `SiteHeader`.
  */
 export function MobileHeader({
   className,
@@ -34,11 +34,8 @@ export function MobileHeader({
   useDismiss(open, close, rootRef, toggleRef);
 
   return (
-    <div
-      ref={rootRef}
-      className={`relative flex h-22 items-center bg-gradient-to-b from-surface to-primary-soft px-4 py-3 ${className}`}
-    >
-      <div className="flex h-16 w-full items-center justify-between rounded-full border border-border bg-surface py-2 pr-2 pl-4">
+    <div ref={rootRef} className={`relative ${className}`}>
+      <div className="flex h-16 w-full items-center justify-between rounded-full border border-border bg-surface py-2 pr-2 pl-4 in-data-scrolled:shadow-lg in-data-scrolled:shadow-text-primary/8 motion-safe:transition-shadow motion-safe:duration-300 motion-safe:ease-reveal">
         <a href="/" aria-label={content.homeLabel} className="rounded-sm">
           <Logo />
         </a>
@@ -72,7 +69,7 @@ export function MobileHeader({
         id={menuId}
         aria-label={content.navigationLabel}
         hidden={!open}
-        className="absolute top-21 right-4 z-30 w-50 overflow-hidden rounded-2xl border border-border-card bg-surface p-2"
+        className="absolute top-18 right-0 z-30 w-50 overflow-hidden rounded-2xl border border-border-card bg-surface p-2"
       >
         <ul className="flex flex-col">
           {navigation.map((item) => (

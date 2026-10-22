@@ -38,3 +38,13 @@ export function revealDelay(
 ): CSSProperties {
   return { '--reveal-delay': `${index * stepMs}ms` } as CSSProperties;
 }
+
+/**
+ * Rule: the fixed header compacts once the page has scrolled past this many pixels,
+ * so tiny scroll jitter at the top never toggles it.
+ */
+export const headerCompactAfterPx = 16;
+
+export function isHeaderCompact(scrollY: number): boolean {
+  return scrollY > headerCompactAfterPx;
+}
