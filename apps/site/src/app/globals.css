@@ -51,6 +51,23 @@ html[data-reveal-ready] [data-revealed="in"] {
 }
 
 /**
+ * Rule: on desktop the protection art follows the scroll: the hand slides in from the left and the koala from the right.
+ * Rule: the art only moves once the script is ready, so without JavaScript or with reduced motion it stays in place.
+ */
+html[data-scroll-slide] [data-slide-from] {
+  transform: translateX(calc((1 - var(--slide, 1)) * var(--slide-distance)));
+  will-change: transform;
+}
+
+[data-slide-from="left"] {
+  --slide-distance: -100%;
+}
+
+[data-slide-from="right"] {
+  --slide-distance: 100%;
+}
+
+/**
  * Rule: a [data-tilt] card leans at most 5deg toward the mouse and lifts 4px; the cursor side sinks.
  * Rule: the shadow is a pseudo-element faded with opacity and shifted away from the cursor, so it never repaints.
  * Rule: tilting follows the cursor in 200ms; leaving eases back flat in 600ms and leaves no transform behind.

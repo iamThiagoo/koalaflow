@@ -29,6 +29,7 @@ export function ProductProtection({
     >
       <div
         aria-hidden="true"
+        data-scroll-slide
         className="absolute inset-x-0 top-0 hidden lg:block"
         style={{ ...desktopArt, height: u(600) }}
       >
@@ -37,7 +38,7 @@ export function ProductProtection({
           alt=""
           width={1536}
           height={1024}
-          data-reveal="left"
+          data-slide-from="left"
           className="absolute max-w-none"
           style={{ left: u(-60), top: u(60), width: u(700), height: u(467) }}
         />
@@ -46,7 +47,7 @@ export function ProductProtection({
           alt=""
           width={1536}
           height={1024}
-          data-reveal="right"
+          data-slide-from="right"
           className="absolute max-w-none"
           style={{ right: u(-160), top: u(-10), width: u(900), height: u(600) }}
         />
