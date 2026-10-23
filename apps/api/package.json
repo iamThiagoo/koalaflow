@@ -76,7 +76,10 @@
         ],
         "options": {
           "buildTarget": "@koalaflow/api:build",
-          "runBuildTargetDependencies": false
+          "runBuildTargetDependencies": false,
+          "runtimeArgs": [
+            "--env-file-if-exists=apps/api/.env"
+          ]
         },
         "configurations": {
           "development": {
@@ -86,18 +89,55 @@
             "buildTarget": "@koalaflow/api:build:production"
           }
         }
+      },
+      "test": {
+        "cache": true,
+        "inputs": [
+          "default",
+          "^production"
+        ]
+      },
+      "db-migrate": {
+        "dependsOn": [
+          "build"
+        ]
+      },
+      "db-migration-create": {
+        "dependsOn": [
+          "build"
+        ]
       }
     }
   },
+  "scripts": {
+    "test": "vitest run",
+    "e2e": "vitest run --config vitest.e2e.config.ts",
+    "db-migrate": "node --env-file-if-exists=.env node_modules/@mikro-orm/cli/cli.js migration:up --config dist/platform/database/mikro-orm.config.js",
+    "db-migration-create": "node --env-file-if-exists=.env node_modules/@mikro-orm/cli/cli.js migration:create --config dist/platform/database/mikro-orm.config.js --path src/platform/database/migrations"
+  },
   "dependencies": {
+    "@mikro-orm/cli": "^7.2.5",
+    "@mikro-orm/core": "^7.2.5",
+    "@mikro-orm/migrations": "^7.2.5",
+    "@mikro-orm/nestjs": "^7.1.0",
+    "@mikro-orm/postgresql": "^7.2.5",
     "@nestjs/common": "^12.1.3",
     "@nestjs/core": "^12.1.3",
     "@nestjs/platform-express": "^12.1.3",
+    "express": "5.2.1",
+    "helmet": "^8.3.0",
+    "nestjs-pino": "^5.3.1",
+    "pino": "^10.4.0",
+    "pino-http": "^11.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@nestjs/testing": "^12.1.3"
+    "@nestjs/testing": "^12.1.3",
+    "@types/express": "^5.0.6",
+    "unplugin-swc": "^2.0.0",
+    "vitest": "5.0.5"
   }
 }

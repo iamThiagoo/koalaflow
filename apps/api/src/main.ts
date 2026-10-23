@@ -1,15 +1,21 @@
-import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app/app.module.js';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import { AppModule } from './app.module.js';
+import { ConfigError, loadConfig } from './platform/config/load-config.js';
+import { appOptions, configureApp } from './platform/http/configure-app.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api');
+  const config = loadConfig(process.env);
+  const app = await NestFactory.create<NestExpressApplication>(
+    AppModule.forRoot(config),
+    appOptions,
+  );
 
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
-
-  Logger.log(`🚀 Application is running on: http://localhost:${port}/api`);
+  configureApp(app);
+  await app.listen(config.port);
 }
 
-bootstrap();
+bootstrap().catch((error: unknown) => {
+  console.error(error instanceof ConfigError ? error.message : error);
+  process.exit(1);
+});

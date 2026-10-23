@@ -34,12 +34,30 @@ ci: scan for secrets with gitleaks
 
 | App | Stack | Status |
 |---|---|---|
-| `apps/api` | NestJS 12 (ESM), `@nestjs/cqrs`, built with `tsc` (`@nx/js:tsc`) | created |
+| `apps/api` | NestJS 12 (ESM), `@nestjs/cqrs`, MikroORM 7 (Postgres), nestjs-pino, zod; built with `tsc` (`@nx/js:tsc`) | created |
 | `apps/app` | Next 16 (App Router, Turbopack): creator dashboard; the player is the `/embed/[videoId]` route using Video.js 10 (`@videojs/react`) | created |
 | `apps/site` | Next 16 static export (`output: 'export'`): public marketing site for the apex domain, pt-BR only | created |
 | `apps/worker` | Node + FFmpeg, consumes SQS, outputs HLS | planned |
 
 There is no separate player app.
+
+`apps/api` runtime code shared by every context lives in `apps/api/src/platform/` (config, logging,
+http, database, health). Run it locally with the compose stack:
+
+```sh
+docker compose up -d                      # Postgres, Redis, Floci on 127.0.0.1 (POSTGRES_PORT etc. to remap)
+cp apps/api/.env.example apps/api/.env
+pnpm nx db-migrate @koalaflow/api         # apply migrations from the build output
+pnpm nx dev @koalaflow/api                # http://localhost:3000/api/health/ready
+```
+
+- Config is a zod schema read once at startup (`loadConfig`) and passed to modules through
+  `forRoot(config)`; add new variables there and to `.env.example`.
+- Client errors come only from `ApiException` (or `ValidationException` via `ZodValidationPipe` with
+  `z.strictObject`); any other exception becomes a generic message for its status.
+- Migrations live in `src/platform/database/migrations/`; create one with
+  `pnpm nx db-migration-create @koalaflow/api -- --name <name>` against the local database (MikroORM CLI).
+- `e2e` boots the real app against Postgres (compose locally, a service container in CI).
 
 `apps/app` and `apps/site` do not use `@nx/next` (it pulls in webpack). Their targets come from
 `package.json` scripts; `typecheck` is `next typegen && tsc --noEmit` because `@nx/js/typescript`
@@ -91,9 +109,12 @@ still validates the routes.
 - `domain` has no framework or infrastructure dependencies.
 - Events inside a context: `@nestjs/cqrs` (`AggregateRoot.apply()` + `EventBus`).
   Between contexts/services: outbox table in the same transaction → relay → SQS (with DLQ).
-- Postgres is the main database (MikroORM recommended). Redis only for cache/rate limit.
+- Postgres is the main database (MikroORM in `apps/api`). Redis only for cache/rate limit.
+- One Postgres schema per owner: `identity` for Better Auth (`apps/app`), one per api bounded context.
+  No api entity uses `identity`; MikroORM only diffs the schemas its entities use, so its migrations
+  never touch Better Auth tables.
 - Uploads go straight from the browser to S3 via presigned multipart URLs, never through the api.
-- Infra: AWS via Terraform (`infra/terraform`), Docker, docker-compose with Floci (S3/SQS, `floci/floci` image, port 4566) locally.
+- Infra: AWS via Terraform (`infra/terraform`), Docker; locally the root `compose.yaml` runs Postgres, Redis and Floci (S3/SQS, port 4566).
 
 Decided:
 - Product model: Panda-style B2B protected content (private by default, domain-restricted embeds,
@@ -109,7 +130,8 @@ Decided:
 - No Nx Cloud, no ESLint, no Prettier. Biome handles format, lint and import sorting.
 - ESM: relative imports use the `.js` extension (`import { X } from './x.js'`); Next apps use the `@/` alias instead.
 - Nest DI: never use `import type` for injected classes (it erases the runtime reference).
-  Biome's `useImportType` is turned off for `apps/api/**` and `packages/**` for this reason.
+  Biome's `useImportType` is turned off for `apps/api/**` and `packages/**` for this reason, as is
+  `noStaticOnlyClass` (Nest dynamic modules are classes with only a static `forRoot`).
 - New dependencies with install scripts must be listed in `allowBuilds` in `pnpm-workspace.yaml`
   (`true` only if the script is needed); otherwise `pnpm install` fails in CI.
 - Keep `.claude/settings.json` expanded (Biome override `expand: "always"`); Nx compares its text.
@@ -118,8 +140,7 @@ Decided:
 
 Security is part of design, code, tests and review, scaled to the risk of each change. References:
 OWASP Top 10, OWASP API Security Top 10 (for `apps/api`) and OWASP ASVS Level 2 as the checklist
-for authentication, sessions and access control. This section is the single source of the security
-policy; `openspec/config.yaml` only points to it.
+for authentication, sessions and access control.
 
 ### Security-sensitive changes
 
@@ -229,6 +250,19 @@ Follow the testing policy; add these only where the risk exists:
   application data (objects outside the state bucket, secrets, parameters, KMS decrypt, table
   items, logs). A data source that needs such data requires changing `plan_data_guard` in `global/`.
 
+## Simplicity
+
+- Prefer the simplest solution that meets the spec. Reuse existing code and library defaults before
+  adding anything; add an abstraction, file, export, option or config only for a current use, never
+  "for a later change".
+- Do not set an option to its default value, and do not export what only its own file uses.
+- Each rule has one home: project policies in this file, OpenSpec artifact rules in
+  `openspec/config.yaml`, decisions of a change in its artifacts, behavior details in code (`Rule:`
+  comments). Anywhere else, point to it instead of restating it. Before adding an instruction,
+  comment or doc, look for one that already says it, in any wording, and update that one instead.
+- Before finishing, review the whole diff for leftovers: unused code, exports, files, options or
+  dependencies, debug output, and stale comments or docs.
+
 ## Code comments
 
 Comments about business rules or design decisions are simple, short and objective,
@@ -255,9 +289,8 @@ in a block comment with one `* Rule: ...` line per rule:
 ## Spec-driven development (OpenSpec)
 
 - Flow: `/opsx:explore` (optional) → `/opsx:propose <name>` → user reviews → `/opsx:apply` → `/opsx:archive`.
-- Project rules for artifacts live in `openspec/config.yaml`; keep it in sync with this file.
-- Every proposal states its security impact; a security-sensitive change documents its risks and
-  mitigations in `design.md` before `/opsx:apply`.
+- `openspec/config.yaml` also keeps a short summary of this project (update it when a fact in it
+  changes) and names the sections of this file for policies.
 - In `openspec/config.yaml`, quote YAML list items that contain `": "`, or the rules are ignored.
 
 ## Checks

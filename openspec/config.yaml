@@ -1,18 +1,14 @@
 schema: spec-driven
 
 context: |
-  Language: English
-  All artifacts, code, identifiers and commit messages must be written in English,
-  even when the conversation with the user is in another language.
-
-  Commits: one line, Conventional Commits "<type>(<scope>): <subject>" (e.g. feat(infra): ..., feat(site): ...),
-  lowercase imperative subject, no body, no Co-Authored-By; one commit per area (infra, site, app, api, worker, ui).
+  Policies live in CLAUDE.md and are not copied here; follow its sections Language (artifacts in English),
+  Commits, Code comments, Testing policy, Simplicity and Security.
 
   Product: Koalaflow, a video hosting platform (Vimeo / Panda Video style):
   upload -> FFmpeg transcoding to HLS -> signed CloudFront delivery -> embedded player.
 
   Monorepo: Nx + pnpm, Node 24. Apps:
-  - apps/api: NestJS 12 (ESM), @nestjs/cqrs, built with tsc
+  - apps/api: NestJS 12 (ESM), @nestjs/cqrs, MikroORM 7, nestjs-pino, zod, built with tsc; shared runtime code in apps/api/src/platform
   - apps/app: Next (creator dashboard; the player is the /embed/[videoId] route, Video.js 10)
   - apps/site: Next static export (public marketing site, pt-BR only)
   - apps/worker: Node + FFmpeg, consumes SQS
@@ -22,8 +18,8 @@ context: |
   - packages/ui is the shared frontend design-token package, not a bounded context
   - domain has no framework or infrastructure dependencies
   - Events inside a context: @nestjs/cqrs EventBus; between contexts/services: outbox table -> SQS
-  - Postgres is the main database
-  - AWS via Terraform, Docker; Floci (open-source AWS emulator) for local S3/SQS
+  - Postgres is the main database, one schema per owner (identity for Better Auth in apps/app, one per api context)
+  - AWS via Terraform, Docker; root compose.yaml runs Postgres, Redis and Floci (open-source AWS emulator for S3/SQS) locally
   - infra/terraform (Nx project @koalaflow/infra): roots bootstrap/, global/, envs/<env>/<component>/ (one state each), shared modules/
   - Single AWS account, us-east-1, prod only for now; S3 remote state with native locking
   - CI authenticates to AWS with GitHub OIDC roles only (no static keys); Terraform plans on PRs, applies on main behind the production environment
@@ -56,22 +52,6 @@ context: |
   - No Nx Cloud
   - Run tasks through Nx: pnpm nx <target> <project>
 
-  Code comments:
-  - Comments about business rules or design decisions must be simple, short and objective,
-    in a block comment with one "* Rule: ..." line per rule. Example:
-      /**
-       * Rule: a video can only be published after transcoding succeeds.
-       */
-
-  Testing policy:
-  - Unit tests: write efficient unit tests that prioritize business rules, validations, calculations, error scenarios and relevant behaviors. Tests must verify expected results and behavior, not internal implementation details.
-  - End-to-end (E2E) tests: write E2E tests when the integration between important modules, services or components needs to be validated. Not every flow needs an end-to-end test. Prioritize business-critical scenarios and those where integration can introduce significant failures.
-  - Quality criterion: prefer tests that add confidence and help prevent regressions over chasing code coverage at any cost.
-  - Maintainability: keep tests simple, deterministic, independent and easy to understand. Avoid duplication, unnecessary mocks and brittle tests that depend on internal details.
-  - New features and fixes: every new feature or bug fix must add or update the relevant tests, following the criteria above.
-  - Execution: run the relevant tests after making changes and fix any failures before considering the implementation complete.
-  Goal: keep a reliable test suite proportional to the project's complexity, focused on business rules and the highest-risk areas.
-
 rules:
   proposal:
     - State which bounded contexts are affected
@@ -85,18 +65,17 @@ rules:
     - "A security-sensitive change always has a design.md. In Risks / Trade-offs, list each threat as: [Risk] (OWASP category) → Mitigation → how it is verified (test or check)"
     - A risk left without mitigation is marked as accepted, with the reason, for the user to approve when reviewing
     - Name the aggregates and domain events involved
-    - Call out new dependencies and why they are needed
+    - Call out each new dependency, abstraction or shared file and the current use that needs it
     - "Include a test strategy following the testing policy: which business rules get unit tests and which critical integrations, if any, need E2E tests"
   tasks:
     - Pair each feature or bug-fix task with the tests it needs, following the testing policy
     - For security-sensitive changes, map every mitigation in design.md to a task with its test, and add a task before verification to review the diff against the security policy (/security-review) and fix the findings
-    - End with a verification task running pnpm check and pnpm nx affected -t typecheck build test
+    - End with a verification task that reviews the diff for leftovers (Simplicity in CLAUDE.md) and runs pnpm check and pnpm nx affected -t typecheck build test
 
 operations:
   apply:
     guidance:
-      - Follow the testing policy in the project context
-      - Run the relevant tests after each change and fix any failures before marking a task or the change as done
+      - Follow the Testing policy in CLAUDE.md; run the relevant tests before marking a task or the change as done
       - Follow the Security section of CLAUDE.md; do not implement a security-sensitive change until design.md documents its risks and mitigations
       - If a new security risk appears while implementing, add it to design.md and tasks.md before continuing, instead of working around it silently
   archive:
