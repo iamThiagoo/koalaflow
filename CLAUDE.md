@@ -34,7 +34,7 @@ ci: scan for secrets with gitleaks
 
 | App | Stack | Status |
 |---|---|---|
-| `apps/api` | NestJS 12 (ESM), `@nestjs/cqrs`, MikroORM 7 (Postgres), nestjs-pino, zod; built with `tsc` (`@nx/js:tsc`) | created |
+| `apps/api` | NestJS 12 (ESM), `@nestjs/cqrs`, MikroORM 7 (Postgres), nestjs-pino, class-validator; built with `tsc` (`@nx/js:tsc`) | created |
 | `apps/app` | Next 16 (App Router, Turbopack): creator dashboard; the player is the `/embed/[videoId]` route using Video.js 10 (`@videojs/react`) | created |
 | `apps/site` | Next 16 static export (`output: 'export'`): public marketing site for the apex domain, pt-BR only | created |
 | `apps/worker` | Node + FFmpeg, consumes SQS, outputs HLS | planned |
@@ -51,10 +51,12 @@ pnpm nx db-migrate @koalaflow/api         # apply migrations from the build outp
 pnpm nx dev @koalaflow/api                # http://localhost:3000/api/health/ready
 ```
 
-- Config is a zod schema read once at startup (`loadConfig`) and passed to modules through
-  `forRoot(config)`; add new variables there and to `.env.example`.
-- Client errors come only from `ApiException` (or `ValidationException` via `ZodValidationPipe` with
-  `z.strictObject`); any other exception becomes a generic message for its status.
+- Config is read from `process.env` where each setting is used (`main.ts`, `LoggingModule`,
+  `mikroOrmOptions`), when the module starts rather than at import; there is no startup validation.
+  Add new variables to `.env.example`.
+- Client errors come only from `ApiException` (also thrown as `400 Validation failed` by the global
+  `StrictValidationPipe`, which validates every parameter typed with a class-validator DTO class);
+  any other exception becomes a generic message for its status.
 - Migrations live in `src/platform/database/migrations/`; create one with
   `pnpm nx db-migration-create @koalaflow/api -- --name <name>` against the local database (MikroORM CLI).
 - `e2e` boots the real app against Postgres (compose locally, a service container in CI).

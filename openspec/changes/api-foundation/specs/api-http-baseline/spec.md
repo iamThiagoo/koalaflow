@@ -56,17 +56,17 @@ with the uniform error body, without echoing the body or parser details.
 
 ### Requirement: Input validation rejects unknown and invalid fields
 Endpoints that accept input SHALL validate it against a declared schema and SHALL reject unknown
-fields and invalid values with `400`. The error body SHALL list the offending field paths and
-problem codes without echoing the submitted values.
+fields and invalid values with `400` and the uniform error body with the message
+`Validation failed`. The error body SHALL NOT list fields or echo the submitted values.
 
 #### Scenario: Unknown field
 - **WHEN** a client sends a body with a field the endpoint's schema does not declare
-- **THEN** the response is `400` and lists that field path
+- **THEN** the response is `400` with the message `Validation failed`
 
 #### Scenario: Invalid value is not echoed
 - **WHEN** a client sends a value that fails validation, such as a 10,000-character string or
   `../../etc/passwd` in a field restricted to a name format
-- **THEN** the response is `400`, lists the field path and does not contain the submitted value
+- **THEN** the response is `400` and does not contain the submitted value
 
 ### Requirement: Security headers on every response
 Every api response SHALL include `X-Content-Type-Options: nosniff`, `Strict-Transport-Security`,

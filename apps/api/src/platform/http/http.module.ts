@@ -2,19 +2,20 @@ import {
   type MiddlewareConsumer,
   Module,
   type NestModule,
-  RequestMethod,
 } from '@nestjs/common';
-import { APP_FILTER } from '@nestjs/core';
-import { BodyParserMiddleware } from './body-parser.middleware.js';
+import { APP_FILTER, APP_PIPE } from '@nestjs/core';
+import { json } from 'express';
 import { GlobalExceptionFilter } from './exception.filter.js';
+import { StrictValidationPipe } from './validation.pipe.js';
 
 @Module({
-  providers: [{ provide: APP_FILTER, useClass: GlobalExceptionFilter }],
+  providers: [
+    { provide: APP_FILTER, useClass: GlobalExceptionFilter },
+    { provide: APP_PIPE, useClass: StrictValidationPipe },
+  ],
 })
 export class HttpModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer
-      .apply(BodyParserMiddleware)
-      .forRoutes({ path: '{/*splat}', method: RequestMethod.ALL });
+    consumer.apply(json({ limit: '1mb' })).forRoutes('{/*splat}');
   }
 }

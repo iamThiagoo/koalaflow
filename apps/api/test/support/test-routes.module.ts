@@ -1,13 +1,14 @@
-import { Body, Controller, Get, Module, Post } from '@nestjs/common';
-import { z } from 'zod';
-import { ZodValidationPipe } from '../../src/platform/http/zod-validation.pipe.js';
+import { Body, Controller, Get, Module, Post, Res } from '@nestjs/common';
+import { Matches } from 'class-validator';
+import type { Response } from 'express';
 
 export const internalErrorMessage =
   'connect ECONNREFUSED db-internal.local:5432 for user "admin"';
 
-const nameSchema = z.strictObject({
-  name: z.string().regex(/^[a-z0-9-]{1,32}$/),
-});
+class CreateNameDto {
+  @Matches(/^[a-z0-9-]{1,32}$/)
+  name!: string;
+}
 
 /**
  * Routes that exist only in e2e tests, to exercise failure paths of the HTTP baseline.
@@ -19,10 +20,14 @@ class TestRoutesController {
     throw new Error(internalErrorMessage);
   }
 
+  @Get('error-after-headers')
+  errorAfterHeaders(@Res() res: Response): never {
+    res.write('partial');
+    throw new Error(internalErrorMessage);
+  }
+
   @Post('names')
-  createName(
-    @Body(new ZodValidationPipe(nameSchema)) body: z.output<typeof nameSchema>,
-  ) {
+  createName(@Body() body: CreateNameDto) {
     return body;
   }
 }

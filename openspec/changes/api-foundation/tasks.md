@@ -13,26 +13,26 @@
 
 ## 3. Configuration
 
-- [x] 3.1 Implement the zod config schema and `loadConfig`, and load it in `main.ts` before the app is created; unit tests cover valid config, missing `DB_HOST`, `PORT` `70000` and `abc`, unknown `LOG_LEVEL`, unused variables ignored, production with `DB_SSL=false`, development with `DB_SSL=false`, and that the error message contains no input value (including `DB_PASSWORD`)
+- [x] 3.1 Read `PORT`, `LOG_LEVEL` and `DB_*` from `process.env` where they are used (`main.ts`, `LoggingModule`, `mikroOrmOptions`), with database TLS on unless `DB_SSL=false` and production refusing `DB_SSL=false`; verify the production refusal names only `DB_SSL`
 - [x] 3.2 Add `apps/api/.env.example` matching `compose.yaml` and `runtimeArgs: ["--env-file-if-exists=apps/api/.env"]` on the `dev` target; verify `pnpm nx dev @koalaflow/api` starts with the copied `.env` and exits non-zero naming the variable when `DB_HOST` is removed
 
 ## 4. Logging
 
-- [x] 4.1 Configure nestjs-pino (JSON, `LOG_LEVEL`, status-based levels, `bufferLogs`) with serializers that drop headers, bodies and the query string and `redact` paths for `authorization`, `cookie`, `x-api-key`, `set-cookie`; unit tests on the serializers with credentials and `?signature=abc123&token=xyz`
-- [x] 4.2 Implement request id handling in `genReqId` (accept only UUIDs, else `randomUUID()`, set `X-Request-Id`); unit tests with missing, valid, CRLF-containing and over-long ids
+- [x] 4.1 Configure nestjs-pino (JSON, `LOG_LEVEL`, status-based levels, `bufferLogs`) with serializers that drop headers, bodies and the query string and `redact` paths for `authorization`, `cookie`, `x-api-key`, `set-cookie`; e2e on a request with credentials and `?signature=abc123&token=xyz`
+- [x] 4.2 Implement request id handling in `genReqId` (accept only UUIDs, else `randomUUID()`, set `X-Request-Id`); covered by the e2e in 5.5 (missing, valid and malformed ids)
 
 ## 5. HTTP baseline
 
-- [x] 5.1 Disable Nest's body parser and register `json`/`urlencoded` with a 1 MB limit plus the error middleware that turns parser failures into `HttpException`s; covered by the e2e in 5.5
-- [x] 5.2 Implement the global catch-all exception filter with the uniform body (`statusCode`, `error`, `message`, `requestId`) and server-side error logging with stack for unexpected errors only; unit tests for `HttpException`, validation exception with `issues` and an unknown error with an internal message
-- [x] 5.3 Implement `ZodValidationPipe` and the issue mapper keeping only `path` and `code`; unit tests with an unknown field, a 10,000-character string and `../../etc/passwd`, asserting the values are absent from the result
+- [x] 5.1 Disable Nest's body parser and apply `json` with a 1 MB limit as a module middleware after pino-http, with the filter keeping the status of parser errors; covered by the e2e in 5.5
+- [x] 5.2 Implement the global catch-all exception filter with the uniform body (`statusCode`, `error`, `message`, `requestId`) and server-side error logging with stack for unexpected errors only; covered by the e2e in 5.5
+- [x] 5.3 Implement the global `StrictValidationPipe` (class-validator) answering every failure with `400 Validation failed` and no field details; covered by the e2e in 5.5
 - [x] 5.4 Configure helmet (CSP `default-src 'none'; frame-ancestors 'none'`, `no-referrer`, HSTS), keep CORS disabled and call `enableShutdownHooks()`
 - [x] 5.5 Add e2e tests for the HTTP baseline using a test-only module with a route that throws an internal error and a route validated by a strict schema: request id (missing, valid, malformed), unknown route `404`, internal error `500` without the internal message, `requestId` equals the header, malformed JSON `400` without parser text, oversized body `413`, validation `400` without echoed values, security headers and no `X-Powered-By` on `200` and `404`, foreign-origin preflight without `Access-Control-Allow-Origin`
 - [x] 5.6 Add e2e tests for logging with an in-memory pino destination: one line per request with request id, method, path, status and duration; nothing at `warn` level for a `200`; no `Authorization`, `Cookie` or query string values; error line with stack and the same request id for the internal error; no stack line for a `400`
 
 ## 6. Database
 
-- [x] 6.1 Register MikroORM 7 (Postgres driver from the config, TLS when `DB_SSL=true`, default migration settings, no api entity in the `identity` schema); verify the app boots against the compose Postgres
+- [x] 6.1 Register MikroORM 7 (Postgres driver from the config, TLS unless `DB_SSL=false`, default migration settings, no api entity in the `identity` schema); verify the app boots against the compose Postgres
 - [x] 6.2 Add `mikro-orm.config.ts` for the MikroORM CLI and the `db-migrate` / `db-migration-create` targets (depending on `build`); verify `pnpm nx db-migrate @koalaflow/api` succeeds on an empty database and running it twice is a no-op
 
 ## 7. Health

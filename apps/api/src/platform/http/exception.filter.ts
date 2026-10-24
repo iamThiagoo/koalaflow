@@ -7,48 +7,14 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import {
-  ApiException,
-  ValidationException,
-  type ValidationIssue,
-} from './api.exception.js';
-
-export interface ErrorBody {
-  statusCode: number;
-  error: string;
-  message: string;
-  requestId: string;
-  issues?: ValidationIssue[];
-}
+import { ApiException } from './api.exception.js';
 
 const genericMessages: Record<number, string> = {
-  404: 'Resource not found',
-  413: 'Request body too large',
-  415: 'Unsupported request body encoding',
-  500: 'Internal server error',
+  [HttpStatus.NOT_FOUND]: 'Resource not found',
+  [HttpStatus.PAYLOAD_TOO_LARGE]: 'Request body too large',
+  [HttpStatus.UNSUPPORTED_MEDIA_TYPE]: 'Unsupported request body encoding',
+  [HttpStatus.INTERNAL_SERVER_ERROR]: 'Internal server error',
 };
-
-/**
- * Rule: clients only see messages from ApiException; every other error gets a generic message per status.
- * Rule: unexpected errors become 500 and their details stay in the server log.
- */
-export function toErrorBody(exception: unknown, requestId: string): ErrorBody {
-  const statusCode =
-    exception instanceof HttpException
-      ? exception.getStatus()
-      : HttpStatus.INTERNAL_SERVER_ERROR;
-  const body: ErrorBody = {
-    statusCode,
-    error: STATUS_CODES[statusCode] ?? 'Error',
-    message:
-      exception instanceof ApiException
-        ? exception.message
-        : (genericMessages[statusCode] ?? STATUS_CODES[statusCode] ?? 'Error'),
-    requestId,
-  };
-  if (exception instanceof ValidationException) body.issues = exception.issues;
-  return body;
-}
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -56,13 +22,40 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const http = host.switchToHttp();
     const req = http.getRequest<Request>();
     const res = http.getResponse<Response>();
-    if (res.headersSent) return;
+    const statusCode = statusOf(exception);
 
-    const body = toErrorBody(exception, String(req.id));
-    if (body.statusCode >= 500) {
+    if (res.headersSent || statusCode >= HttpStatus.INTERNAL_SERVER_ERROR) {
       res.err =
         exception instanceof Error ? exception : new Error('Non-error thrown');
     }
-    res.status(body.statusCode).json(body);
+    if (res.headersSent) {
+      req.socket.destroy();
+      return;
+    }
+
+    const error = STATUS_CODES[statusCode] ?? 'Error';
+    const body = {
+      statusCode,
+      error,
+      message:
+        exception instanceof ApiException
+          ? exception.message
+          : (genericMessages[statusCode] ?? error),
+      requestId: String(req.id),
+    };
+    res.status(statusCode).json(body);
   }
+}
+
+function statusOf(exception: unknown): number {
+  if (exception instanceof HttpException) return exception.getStatus();
+
+  const { status, expose } = Object(exception) as {
+    status?: unknown;
+    expose?: unknown;
+  };
+
+  return expose === true && typeof status === 'number'
+    ? status
+    : HttpStatus.INTERNAL_SERVER_ERROR;
 }

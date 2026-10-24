@@ -8,7 +8,7 @@ context: |
   upload -> FFmpeg transcoding to HLS -> signed CloudFront delivery -> embedded player.
 
   Monorepo: Nx + pnpm, Node 24. Apps:
-  - apps/api: NestJS 12 (ESM), @nestjs/cqrs, MikroORM 7, nestjs-pino, zod, built with tsc; shared runtime code in apps/api/src/platform
+  - apps/api: NestJS 12 (ESM), @nestjs/cqrs, MikroORM 7, nestjs-pino, class-validator, built with tsc; shared runtime code in apps/api/src/platform
   - apps/app: Next (creator dashboard; the player is the /embed/[videoId] route, Video.js 10)
   - apps/site: Next static export (public marketing site, pt-BR only)
   - apps/worker: Node + FFmpeg, consumes SQS

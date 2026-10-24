@@ -2,12 +2,9 @@ import { Writable } from 'node:stream';
 import type { ModuleMetadata } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
+import helmet from 'helmet';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from '../../src/app.module.js';
-import { loadConfig } from '../../src/platform/config/load-config.js';
-import {
-  appOptions,
-  configureApp,
-} from '../../src/platform/http/configure-app.js';
 
 export type LogLine = Record<string, unknown> & { level: number; msg?: string };
 
@@ -22,7 +19,7 @@ export interface TestApp {
  */
 function testEnv(
   overrides: Record<string, string> = {},
-): Record<string, string | undefined> {
+): Record<string, string> {
   return {
     NODE_ENV: 'test',
     LOG_LEVEL: 'info',
@@ -41,6 +38,7 @@ let started = false;
 /**
  * Boots the real AppModule on a random port, capturing log lines in memory.
  * Rule: one app per test file; nestjs-pino keeps the first app's logger for the whole process.
+ * Rule: the app reads process.env, which Vitest keeps separate for each test file.
  */
 export async function startApp(
   options: {
@@ -62,16 +60,30 @@ export async function startApp(
     },
   });
 
-  const config = loadConfig(testEnv(options.env));
+  Object.assign(process.env, testEnv(options.env));
   const moduleRef = await Test.createTestingModule({
-    imports: [
-      AppModule.forRoot(config, { logStream }),
-      ...(options.imports ?? []),
-    ],
+    imports: [AppModule.forRoot({ logStream }), ...(options.imports ?? [])],
   }).compile();
-  const app =
-    moduleRef.createNestApplication<NestExpressApplication>(appOptions);
-  configureApp(app);
+  /**
+   * Rule: mirrors the app setup in src/main.ts; change both together.
+   */
+  const app = moduleRef.createNestApplication<NestExpressApplication>({
+    bodyParser: false,
+    bufferLogs: true,
+  });
+  app.useLogger(app.get(Logger));
+  app.enableShutdownHooks();
+  app.setGlobalPrefix('api');
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        useDefaults: false,
+        directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] },
+      },
+      frameguard: { action: 'deny' },
+      referrerPolicy: { policy: 'no-referrer' },
+    }),
+  );
   await app.listen(0, '127.0.0.1');
 
   return { url: await app.getUrl(), logs, close: () => app.close() };

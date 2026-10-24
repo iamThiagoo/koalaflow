@@ -1,21 +1,33 @@
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import helmet from 'helmet';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module.js';
-import { ConfigError, loadConfig } from './platform/config/load-config.js';
-import { appOptions, configureApp } from './platform/http/configure-app.js';
 
 async function bootstrap() {
-  const config = loadConfig(process.env);
   const app = await NestFactory.create<NestExpressApplication>(
-    AppModule.forRoot(config),
-    appOptions,
+    AppModule.forRoot(),
+    { bodyParser: false, bufferLogs: true },
   );
 
-  configureApp(app);
-  await app.listen(config.port);
+  app.useLogger(app.get(Logger));
+  app.enableShutdownHooks();
+  app.setGlobalPrefix('api');
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        useDefaults: false,
+        directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] },
+      },
+      frameguard: { action: 'deny' },
+      referrerPolicy: { policy: 'no-referrer' },
+    }),
+  );
+
+  await app.listen(process.env.PORT ?? 3000);
 }
 
 bootstrap().catch((error: unknown) => {
-  console.error(error instanceof ConfigError ? error.message : error);
+  console.error(error);
   process.exit(1);
 });

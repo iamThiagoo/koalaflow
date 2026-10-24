@@ -1,10 +1,16 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { ErrorBody } from '../src/platform/http/exception.filter.js';
 import { startApp, type TestApp } from './support/start-app.js';
 import {
   internalErrorMessage,
   TestRoutesModule,
 } from './support/test-routes.module.js';
+
+interface ErrorBody {
+  statusCode: number;
+  error: string;
+  message: string;
+  requestId: string;
+}
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
@@ -34,11 +40,12 @@ async function expectUniformError(
 ): Promise<ErrorBody> {
   const body = (await response.json()) as ErrorBody;
   expect(response.status).toBe(statusCode);
-  expect(Object.keys(body).sort()).toEqual(
-    body.issues
-      ? ['error', 'issues', 'message', 'requestId', 'statusCode']
-      : ['error', 'message', 'requestId', 'statusCode'],
-  );
+  expect(Object.keys(body).sort()).toEqual([
+    'error',
+    'message',
+    'requestId',
+    'statusCode',
+  ]);
   expect(body.statusCode).toBe(statusCode);
   expect(body.requestId).toBe(response.headers.get('x-request-id'));
   return body;
@@ -91,6 +98,12 @@ describe('errors', () => {
     );
     expect(text).not.toContain(internalErrorMessage);
   });
+
+  it('aborts a response that fails after it started', async () => {
+    await expect(
+      request('/api/test/error-after-headers').then((r) => r.text()),
+    ).rejects.toThrow();
+  });
 });
 
 describe('request bodies', () => {
@@ -102,7 +115,7 @@ describe('request bodies', () => {
     const text = await response.clone().text();
     const body = await expectUniformError(response, 400);
 
-    expect(body.message).toBe('Malformed request body');
+    expect(body.message).toBe('Bad Request');
     expect(text).not.toMatch(
       /SyntaxError|JSON at position|unterminated|body-parser/i,
     );
@@ -116,6 +129,16 @@ describe('request bodies', () => {
     const body = await expectUniformError(response, 413);
     expect(body.message).toBe('Request body too large');
   });
+
+  it('rejects an unsupported charset with 415', async () => {
+    const response = await request('/api/test/names', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json; charset=latin1' },
+      body: JSON.stringify({ name: 'ok' }),
+    });
+    const body = await expectUniformError(response, 415);
+    expect(body.message).toBe('Unsupported request body encoding');
+  });
 });
 
 describe('validation', () => {
@@ -128,7 +151,7 @@ describe('validation', () => {
     expect(await response.json()).toEqual({ name: 'my-video' });
   });
 
-  it('rejects an unknown field by path', async () => {
+  it('rejects an unknown field', async () => {
     const body = await expectUniformError(
       await postJson(
         '/api/test/names',
@@ -136,9 +159,7 @@ describe('validation', () => {
       ),
       400,
     );
-    expect(body.issues).toEqual([
-      { path: 'isAdmin', code: 'unrecognized_keys' },
-    ]);
+    expect(body.message).toBe('Validation failed');
   });
 
   it.each(['../../etc/passwd', 'a'.repeat(10_000)])(
@@ -151,7 +172,7 @@ describe('validation', () => {
       const text = await response.clone().text();
       const body = await expectUniformError(response, 400);
 
-      expect(body.issues).toEqual([{ path: 'name', code: 'invalid_format' }]);
+      expect(body.message).toBe('Validation failed');
       expect(text).not.toContain(value.slice(0, 16));
     },
   );
