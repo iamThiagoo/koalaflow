@@ -7,6 +7,7 @@ import { HowItWorks } from '@/components/how-it-works';
 import { Pricing } from '@/components/pricing';
 import { ProductProtection } from '@/components/product-protection';
 import { ScrollReveal } from '@/components/scroll-reveal';
+import { ScrollSlide } from '@/components/scroll-slide';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { siteConfig } from '@/config';
@@ -47,6 +48,7 @@ export default function HomePage() {
       </main>
       <SiteFooter content={home.footer} links={links} />
       <ScrollReveal />
+      <ScrollSlide />
       <CardTilt />
     </>
   );
