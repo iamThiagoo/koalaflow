@@ -4,7 +4,6 @@ import { Faq } from '@/components/faq';
 import { FinalInvitation } from '@/components/final-invitation';
 import { Hero } from '@/components/hero';
 import { HowItWorks } from '@/components/how-it-works';
-import { Pricing } from '@/components/pricing';
 import { ProductProtection } from '@/components/product-protection';
 import { ScrollReveal } from '@/components/scroll-reveal';
 import { ScrollSlide } from '@/components/scroll-slide';
@@ -33,11 +32,6 @@ export default function HomePage() {
         />
         <ProductProtection content={home.protection} appUrl={appUrl} />
         <HowItWorks content={home.howItWorks} />
-        <Pricing
-          content={home.pricing}
-          appUrl={appUrl}
-          salesUrl={resolveHref('sales', links)}
-        />
         <Faq
           content={home.faq}
           appUrl={appUrl}
