@@ -1,15 +1,33 @@
-import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app/app.module.js';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import helmet from 'helmet';
+import { Logger } from 'nestjs-pino';
+import { AppModule } from './app.module.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(
+    AppModule.forRoot(),
+    { bodyParser: false, bufferLogs: true },
+  );
+
+  app.useLogger(app.get(Logger));
+  app.enableShutdownHooks();
   app.setGlobalPrefix('api');
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        useDefaults: false,
+        directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] },
+      },
+      frameguard: { action: 'deny' },
+      referrerPolicy: { policy: 'no-referrer' },
+    }),
+  );
 
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
-
-  Logger.log(`🚀 Application is running on: http://localhost:${port}/api`);
+  await app.listen(process.env.PORT ?? 3000);
 }
 
-bootstrap();
+bootstrap().catch((error: unknown) => {
+  console.error(error);
+  process.exit(1);
+});
