@@ -41,7 +41,7 @@
 
 ## 8. CI and documentation
 
-- [ ] 8.1 Add a `postgres:18-alpine` service with throwaway credentials matching the e2e defaults to the `main` job in `.github/workflows/ci.yml`; verify the job runs `e2e` for `@koalaflow/api` green on the PR
+- [x] 8.1 Add a `postgres:18-alpine` service with throwaway credentials matching the e2e defaults to the `main` job in `.github/workflows/ci.yml`; verify the job runs `e2e` for `@koalaflow/api` green on the PR
 - [x] 8.2 Update `CLAUDE.md` (api row, local stack command, `.env.example`, Postgres schema-per-owner rule, `db-migrate` targets) and keep `openspec/config.yaml` in sync; verify the documented commands run as written
 
 ## 9. Verification
