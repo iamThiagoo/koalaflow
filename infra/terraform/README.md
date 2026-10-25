@@ -11,6 +11,7 @@ infra/terraform/
   envs/
     prod/
       site/            # marketing site (apps/site) + its deploy role
+      network/         # VPC, public/private subnets, single NAT gateway
   modules/
     static-site/       # private S3 + CloudFront (OAC) + ACM + DNS + viewer-request function
     github-oidc-role/  # IAM role assumable from GitHub Actions via OIDC
@@ -99,7 +100,18 @@ Run from `infra/terraform` with admin credentials for the target account.
    Without a domain the site is served on `https://<id>.cloudfront.net` and `site_url` returns that
    URL.
 
-5. **Adding the domain later**
+5. **Network**
+
+   ```sh
+   terraform -chdir=envs/prod/network init
+   terraform -chdir=envs/prod/network apply
+   ```
+
+   Apply it before any component that runs inside the VPC (api, app, databases). The single NAT
+   gateway costs about US$ 33/month while it exists; run `terraform destroy` on this root to stop
+   paying when nothing uses it.
+
+6. **Adding the domain later**
 
    Set `domain_name` in `global/terraform.tfvars`, apply `global`, delegate the name servers and
    wait for `dig NS`, then apply `envs/prod/site` (adds the certificate, aliases and DNS records in

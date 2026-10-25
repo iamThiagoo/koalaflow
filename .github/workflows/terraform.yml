@@ -48,6 +48,9 @@ jobs:
               - infra/terraform/modules/static-site/**
               - infra/terraform/modules/github-oidc-role/**
               - .github/workflows/terraform.yml
+            envs/prod/network:
+              - infra/terraform/envs/prod/network/**
+              - .github/workflows/terraform.yml
 
   plan:
     needs: changes
