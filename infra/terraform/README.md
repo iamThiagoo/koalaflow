@@ -13,6 +13,7 @@ infra/terraform/
       site/            # marketing site (apps/site) + its deploy role
       network/         # VPC, public/private subnets, single NAT gateway
       ecr/             # container image repositories (api, app) + push role
+      data/            # RDS Postgres + ElastiCache Redis (private subnets)
   modules/
     static-site/       # private S3 + CloudFront (OAC) + ACM + DNS + viewer-request function
     github-oidc-role/  # IAM role assumable from GitHub Actions via OIDC
@@ -122,7 +123,18 @@ Run from `infra/terraform` with admin credentials for the target account.
    Add the repository variable `ECR_PUSH_ROLE_ARN` (`ecr_push_role_arn`). The role can push only
    from `main`, to the `koalaflow-api` and `koalaflow-app` repositories.
 
-7. **Adding the domain later**
+7. **Data**
+
+   ```sh
+   terraform -chdir=envs/prod/data init
+   terraform -chdir=envs/prod/data apply
+   ```
+
+   Apply it after `network`. RDS (`db.t4g.micro`) and ElastiCache (`cache.t4g.micro`) cost roughly
+   US$ 25/month together while they exist; run `terraform destroy` on this root to stop paying. Both
+   security groups start without ingress rules; the api root adds them.
+
+8. **Adding the domain later**
 
    Set `domain_name` in `global/terraform.tfvars`, apply `global`, delegate the name servers and
    wait for `dig NS`, then apply `envs/prod/site` (adds the certificate, aliases and DNS records in
