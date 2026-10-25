@@ -26,11 +26,11 @@ it('answers 404 to another method on liveness', async () => {
   });
 });
 
-it('reports readiness with the database up', async () => {
+it('reports readiness with the database and Redis up', async () => {
   const response = await fetch(`${app.url}/api/health/ready`);
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual({
     status: 'ok',
-    checks: { database: 'up' },
+    checks: { database: 'up', cache: 'up' },
   });
 });

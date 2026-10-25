@@ -16,6 +16,16 @@ export function mikroOrmOptions(): Options {
     },
     entities: [],
     discovery: { warnWhenNoEntities: false },
+    schemaGenerator: {
+      skipTables: [
+        'user',
+        'session',
+        'account',
+        'organization',
+        'member',
+        'invitation',
+      ],
+    },
     extensions: [Migrator],
     migrations: {
       path: fileURLToPath(new URL('./migrations', import.meta.url)),

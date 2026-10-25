@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Module, Post, Res } from '@nestjs/common';
 import { Matches } from 'class-validator';
 import type { Response } from 'express';
+import { Public } from '../../src/identity/infrastructure/public.decorator.js';
 
 export const internalErrorMessage =
   'connect ECONNREFUSED db-internal.local:5432 for user "admin"';
@@ -13,6 +14,10 @@ class CreateNameDto {
 /**
  * Routes that exist only in e2e tests, to exercise failure paths of the HTTP baseline.
  */
+/**
+ * Rule: public, since these routes exercise the HTTP baseline, not authentication.
+ */
+@Public()
 @Controller('test')
 class TestRoutesController {
   @Get('internal-error')

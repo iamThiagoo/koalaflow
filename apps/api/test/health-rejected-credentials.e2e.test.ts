@@ -16,7 +16,7 @@ it('discloses only the status and keeps the reason in the server log', async () 
   expect(response.status).toBe(503);
   expect(JSON.parse(text)).toEqual({
     status: 'error',
-    checks: { database: 'down' },
+    checks: { database: 'down', cache: 'up' },
   });
   expect(text).not.toMatch(
     /password|authentication|127\.0\.0\.1|postgres|version/i,

@@ -35,7 +35,7 @@ it('reports not ready within 3 seconds', async () => {
   expect(response.status).toBe(503);
   expect(await response.json()).toEqual({
     status: 'error',
-    checks: { database: 'down' },
+    checks: { database: 'down', cache: 'up' },
   });
   expect(Date.now() - started).toBeLessThan(3000);
 });

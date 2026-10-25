@@ -11,11 +11,12 @@ export type LogLine = Record<string, unknown> & { level: number; msg?: string };
 export interface TestApp {
   url: string;
   logs: LogLine[];
+  get<T>(token: string | (abstract new (...args: never[]) => T)): T;
   close(): Promise<void>;
 }
 
 /**
- * Database settings default to the compose stack and the CI service; DB_* variables override them.
+ * Database and Redis settings default to the compose stack and the CI services; DB_* and REDIS_URL override them.
  */
 function testEnv(
   overrides: Record<string, string> = {},
@@ -29,6 +30,9 @@ function testEnv(
     DB_USER: process.env.DB_USER ?? 'koalaflow',
     DB_PASSWORD: process.env.DB_PASSWORD ?? 'koalaflow',
     DB_SSL: 'false',
+    REDIS_URL: process.env.REDIS_URL ?? 'redis://127.0.0.1:6379',
+    BETTER_AUTH_SECRET: 'test-secret-with-at-least-32-characters',
+    BETTER_AUTH_URL: 'http://localhost:3001',
     ...overrides,
   };
 }
@@ -44,6 +48,7 @@ export async function startApp(
   options: {
     env?: Record<string, string>;
     imports?: ModuleMetadata['imports'];
+    overrides?: { provide: unknown; useValue: unknown }[];
   } = {},
 ): Promise<TestApp> {
   if (started)
@@ -61,9 +66,12 @@ export async function startApp(
   });
 
   Object.assign(process.env, testEnv(options.env));
-  const moduleRef = await Test.createTestingModule({
+  const builder = Test.createTestingModule({
     imports: [AppModule.forRoot({ logStream }), ...(options.imports ?? [])],
-  }).compile();
+  });
+  for (const { provide, useValue } of options.overrides ?? [])
+    builder.overrideProvider(provide).useValue(useValue);
+  const moduleRef = await builder.compile();
   /**
    * Rule: mirrors the app setup in src/main.ts; change both together.
    */
@@ -86,5 +94,18 @@ export async function startApp(
   );
   await app.listen(0, '127.0.0.1');
 
-  return { url: await app.getUrl(), logs, close: () => app.close() };
+  return {
+    url: await app.getUrl(),
+    logs,
+    get: (token) => app.get(token),
+    close: () => app.close(),
+  };
+}
+
+export async function compileApp(env: Record<string, string>): Promise<void> {
+  Object.assign(process.env, testEnv(env));
+  const moduleRef = await Test.createTestingModule({
+    imports: [AppModule.forRoot()],
+  }).compile();
+  await moduleRef.close();
 }
