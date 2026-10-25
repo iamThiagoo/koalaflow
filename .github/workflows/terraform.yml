@@ -58,6 +58,9 @@ jobs:
               - infra/terraform/envs/prod/ecr/**
               - infra/terraform/modules/github-oidc-role/**
               - .github/workflows/terraform.yml
+            envs/prod/api:
+              - infra/terraform/envs/prod/api/**
+              - .github/workflows/terraform.yml
 
   plan:
     needs: changes
