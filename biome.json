@@ -47,7 +47,7 @@
       }
     },
     {
-      "includes": ["apps/*/public/**"],
+      "includes": ["apps/*/public/**", "apps/*/src/**/*.svg"],
       "linter": {
         "enabled": false
       },
