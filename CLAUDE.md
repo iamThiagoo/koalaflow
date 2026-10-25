@@ -34,32 +34,42 @@ ci: scan for secrets with gitleaks
 
 | App | Stack | Status |
 |---|---|---|
-| `apps/api` | NestJS 12 (ESM), `@nestjs/cqrs`, MikroORM 7 (Postgres), nestjs-pino, class-validator; built with `tsc` (`@nx/js:tsc`) | created |
-| `apps/app` | Next 16 (App Router, Turbopack): creator dashboard; the player is the `/embed/[videoId]` route using Video.js 10 (`@videojs/react`) | created |
+| `apps/api` | NestJS 12 (ESM), MikroORM 7 (Postgres), Better Auth, nestjs-pino, class-validator; built with `tsc` (`@nx/js:tsc`); holds the bounded contexts | created |
+| `apps/app` | Next 16 (App Router, Turbopack): creator dashboard, frontend only (no auth logic; `proxy.ts` forwards `/api/*` to the api); the player is the `/embed/[videoId]` route using Video.js 10 (`@videojs/react`) | created |
 | `apps/site` | Next 16 static export (`output: 'export'`): public marketing site for the apex domain, pt-BR only | created |
 | `apps/worker` | Node + FFmpeg, consumes SQS, outputs HLS | planned |
 
 There is no separate player app.
 
 `apps/api` runtime code shared by every context lives in `apps/api/src/platform/` (config, logging,
-http, database, health). Run it locally with the compose stack:
+http, database, redis, health). Run the api and the app locally with the compose stack:
 
 ```sh
 docker compose up -d                      # Postgres, Redis, Floci on 127.0.0.1 (POSTGRES_PORT etc. to remap)
-cp apps/api/.env.example apps/api/.env
+cp apps/api/.env.example apps/api/.env    # then set BETTER_AUTH_SECRET (openssl rand -base64 32)
+cp apps/app/.env.example apps/app/.env
+AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_REGION=us-east-1 \
+  aws --endpoint-url http://127.0.0.1:4566 sesv2 create-email-identity \
+  --email-identity no-reply@koalaflow.local  # Floci sender, once per Floci container
 pnpm nx db-migrate @koalaflow/api         # apply migrations from the build output
 pnpm nx dev @koalaflow/api                # http://localhost:3000/api/health/ready
+pnpm nx dev @koalaflow/app                # http://localhost:3001 (sign in with an email code)
+curl -s http://127.0.0.1:4566/_aws/ses    # emails Floci "sent", including sign-in codes
 ```
 
 - Config is read from `process.env` where each setting is used (`main.ts`, `LoggingModule`,
-  `mikroOrmOptions`), when the module starts rather than at import; there is no startup validation.
-  Add new variables to `.env.example`.
+  `mikroOrmOptions`, `RedisModule`, `createAuth`), when the module starts rather than at import;
+  there is no startup validation beyond the production refusals (`REDIS_URL` without TLS, a missing
+  or short `BETTER_AUTH_SECRET`). Add new variables to `.env.example`.
 - Client errors come only from `ApiException` (also thrown as `400 Validation failed` by the global
   `StrictValidationPipe`, which validates every parameter typed with a class-validator DTO class);
-  any other exception becomes a generic message for its status.
+  any other exception becomes a generic message for its status. Better Auth's routes under
+  `/api/auth/*` answer with its own `{ code, message }` errors.
+- Every route needs a session unless it is marked `@Public()` (global `SessionGuard`); tenant-scoped
+  handlers read the tenant with `@CurrentTenant()` and filter every query by its `organizationId`.
 - Migrations live in `src/platform/database/migrations/`; create one with
   `pnpm nx db-migration-create @koalaflow/api -- --name <name>` against the local database (MikroORM CLI).
-- `e2e` boots the real app against Postgres (compose locally, a service container in CI).
+- `e2e` boots the real app against Postgres and Redis (compose locally, service containers in CI).
 
 `apps/app` and `apps/site` do not use `@nx/next` (it pulls in webpack). Their targets come from
 `package.json` scripts; `typecheck` is `next typegen && tsc --noEmit` because `@nx/js/typescript`
@@ -106,15 +116,21 @@ still validates the routes.
 
 ## Architecture (DDD)
 
-- Bounded contexts live in `packages/<context>/{domain,application,infrastructure}`.
-  Proposed contexts: identity, library, ingestion, processing, playback, analytics, billing.
+- Bounded contexts live in `apps/api/src/<context>/{domain,application,infrastructure}`; move one to
+  `packages/<context>` only when a second app imports it (`apps/worker` talks to the api through
+  SQS messages, not imports). Proposed contexts: identity, library, ingestion, processing, playback,
+  analytics, billing.
 - `domain` has no framework or infrastructure dependencies.
-- Events inside a context: `@nestjs/cqrs` (`AggregateRoot.apply()` + `EventBus`).
-  Between contexts/services: outbox table in the same transaction → relay → SQS (with DLQ).
+- `application` holds the use cases: one class per use case with `execute()`, in a `*.use-case.ts`
+  file (`get-tenant.use-case.ts`). Controllers, guards and library hooks in `infrastructure`
+  call them; business rules and ownership checks live there, not in the adapters.
+- Events inside a context: `@nestjs/cqrs` (`AggregateRoot.apply()` + `EventBus`), added with the
+  first domain event. Between contexts/services: outbox table in the same transaction → relay →
+  SQS (with DLQ).
 - Postgres is the main database (MikroORM in `apps/api`). Redis only for cache/rate limit.
-- One Postgres schema per owner: `identity` for Better Auth (`apps/app`), one per api bounded context.
-  No api entity uses `identity`; MikroORM only diffs the schemas its entities use, so its migrations
-  never touch Better Auth tables.
+- Every table lives in the `public` schema, Better Auth's included. Better Auth's tables arrive as
+  raw SQL migrations, and `schemaGenerator.skipTables` lists them so generated migrations leave them
+  alone (without it, MikroORM's diff drops every table that has no entity).
 - Uploads go straight from the browser to S3 via presigned multipart URLs, never through the api.
 - Infra: AWS via Terraform (`infra/terraform`), Docker; locally the root `compose.yaml` runs Postgres, Redis and Floci (S3/SQS, port 4566).
 
@@ -122,7 +138,8 @@ Decided:
 - Product model: Panda-style B2B protected content (private by default, domain-restricted embeds,
   signed URLs; no public discovery pages).
 - Unit test runner: Vitest + SWC (SWC keeps Nest decorator metadata).
-- Auth: Better Auth (self-hosted, data in Postgres), owned by the `identity` context.
+- Auth: Better Auth (self-hosted, data in Postgres), runs in `apps/api`, owned by the `identity`
+  context. Passwordless (email code, Google); the tenant is the session's active organization.
 - No MongoDB: Postgres now, ClickHouse later for playback analytics.
 
 ## Constraints

@@ -21,7 +21,7 @@ The project is in early development.
 | --- | --- |
 | `apps/app` | Creator dashboard and embed player in Next.js |
 | `apps/api` | Backend API in NestJS |
-| `apps/site` | Public marketing site in Next.js |
+| `apps/site` | Landing Page in Next.js |
 | `packages/ui` | Shared design for Tailwind |
 | `infra/terraform` | AWS infrastructure ([README](infra/terraform/README.md)) |
 | `openspec` | Feature specifications and change proposals |

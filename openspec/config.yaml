@@ -8,17 +8,18 @@ context: |
   upload -> FFmpeg transcoding to HLS -> signed CloudFront delivery -> embedded player.
 
   Monorepo: Nx + pnpm, Node 24. Apps:
-  - apps/api: NestJS 12 (ESM), @nestjs/cqrs, MikroORM 7, nestjs-pino, class-validator, built with tsc; shared runtime code in apps/api/src/platform
-  - apps/app: Next (creator dashboard; the player is the /embed/[videoId] route, Video.js 10)
+  - apps/api: NestJS 12 (ESM), MikroORM 7, Better Auth, nestjs-pino, class-validator, built with tsc; shared runtime code in apps/api/src/platform, bounded contexts in apps/api/src/<context>
+  - apps/app: Next (creator dashboard, frontend only; proxy.ts forwards /api/* to the api; the player is the /embed/[videoId] route, Video.js 10)
   - apps/site: Next static export (public marketing site, pt-BR only)
   - apps/worker: Node + FFmpeg, consumes SQS
 
   Architecture (DDD):
-  - Bounded contexts live in packages/<context>/{domain,application,infrastructure}
+  - Bounded contexts live in apps/api/src/<context>/{domain,application,infrastructure}; moved to packages/<context> only when a second app imports one
+  - application holds use cases: one class with execute() per *.use-case.ts file, called by controllers, guards and hooks
   - packages/ui is the shared frontend design-token package, not a bounded context
   - domain has no framework or infrastructure dependencies
-  - Events inside a context: @nestjs/cqrs EventBus; between contexts/services: outbox table -> SQS
-  - Postgres is the main database, one schema per owner (identity for Better Auth in apps/app, one per api context)
+  - Events inside a context: @nestjs/cqrs EventBus (added with the first domain event); between contexts/services: outbox table -> SQS
+  - Postgres is the main database, every table in the public schema (Better Auth's included)
   - AWS via Terraform, Docker; root compose.yaml runs Postgres, Redis and Floci (open-source AWS emulator for S3/SQS) locally
   - infra/terraform (Nx project @koalaflow/infra): roots bootstrap/, global/, envs/<env>/<component>/ (one state each), shared modules/
   - Single AWS account, us-east-1, prod only for now; S3 remote state with native locking
