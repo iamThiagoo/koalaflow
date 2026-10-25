@@ -1,0 +1,46 @@
+name: push-images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'apps/app/**'
+      - 'packages/ui/**'
+      - 'pnpm-lock.yaml'
+      - '.dockerignore'
+      - '.github/workflows/push-images.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: push-images
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: [api, app]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.ECR_PUSH_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Build and push
+        env:
+          IMAGE: koalaflow-${{ matrix.image }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+        run: |
+          account=$(aws sts get-caller-identity --query Account --output text)
+          registry="${account}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+          aws ecr get-login-password | docker login --username AWS --password-stdin "$registry"
+          docker build -f "apps/${{ matrix.image }}/Dockerfile" -t "${registry}/${IMAGE}:${GITHUB_SHA}" .
+          docker push "${registry}/${IMAGE}:${GITHUB_SHA}"

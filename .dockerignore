@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+**/.next
+**/.terraform
+.git
+.nx
+.env
+.env.*
+!.env.example
+openspec

@@ -162,7 +162,15 @@ Run from `infra/terraform` with admin credentials for the target account.
    apply, set `better_auth_url` in `envs/prod/api/terraform.tfvars` to the `app_url` output and apply
    `api` again. The app is reachable only through CloudFront; the ALB accepts CloudFront addresses only.
 
-10. **Adding the domain later**
+10. **Images**
+
+   `apps/api/Dockerfile` and `apps/app/Dockerfile` build from the repository root. The
+   **push-images** workflow builds both on every push to `main` that touches them and pushes
+   `koalaflow-api` and `koalaflow-app` tagged with the commit SHA (the repositories are immutable).
+   It needs the `ECR_PUSH_ROLE_ARN` variable from step 6. After the first push, set `image_tag` and
+   `desired_count = 1` in the `api` and `app` tfvars and apply them, `api` first.
+
+11. **Adding the domain later**
 
    Set `domain_name` in `global/terraform.tfvars`, apply `global`, delegate the name servers and
    wait for `dig NS`, then apply `envs/prod/site` (adds the certificate, aliases and DNS records in
@@ -175,12 +183,15 @@ Run from `infra/terraform` with admin credentials for the target account.
 - **Site change**: merging to `main` runs **Deploy site**: build, upload to S3, invalidate
   CloudFront.
 - Run a plan locally: `terraform -chdir=envs/prod/site plan`.
+- Deploy a new version: after **push-images** finishes, set `image_tag` to the commit SHA in the `api` and `app` tfvars and apply them.
 
 ## Rollback
 
 - **Site**: run **Deploy site** manually from `main` with the `ref` input set to the last good
   commit SHA.
 - **Infrastructure**: revert the pull request; the gated apply puts the previous configuration back.
+- **Images**: set `image_tag` back to a previous commit SHA in the `api` and `app` tfvars and apply
+  them.
 - **State**: the state bucket is versioned; restore a previous object version of the affected key.
 
 ## Adding a component or environment

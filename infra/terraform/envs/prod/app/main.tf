@@ -229,6 +229,14 @@ resource "aws_ecs_service" "app" {
   depends_on = [aws_lb_listener.http]
 }
 
+data "aws_cloudfront_cache_policy" "caching_disabled" {
+  name = "Managed-CachingDisabled"
+}
+
+data "aws_cloudfront_origin_request_policy" "all_viewer" {
+  name = "Managed-AllViewer"
+}
+
 /**
  * Rule: CachingDisabled + AllViewer, because the dashboard is per-user and cookie-authenticated;
  * nothing is cached and every header, cookie and query string reaches the app.
@@ -255,8 +263,8 @@ resource "aws_cloudfront_distribution" "this" {
     viewer_protocol_policy   = "redirect-to-https"
     allowed_methods          = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
     cached_methods           = ["GET", "HEAD"]
-    cache_policy_id          = "4135ea2d-6df8-48d5-a1b7-fe4d6b2a5c5b"
-    origin_request_policy_id = "216adef6-5c7f-40da-b3da-f8cc4c9d9d5b"
+    cache_policy_id          = data.aws_cloudfront_cache_policy.caching_disabled.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer.id
   }
 
   restrictions {
