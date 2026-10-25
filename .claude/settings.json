@@ -1,4 +1,5 @@
 {
+  "model": "opusplan",
   "extraKnownMarketplaces": {
     "nx-claude-plugins": {
       "source": {
@@ -9,6 +10,11 @@
   },
   "enabledPlugins": {
     "nx@nx-claude-plugins": true
+  },
+  "permissions": {
+    "deny": [
+      "Bash(git push:*)"
+    ]
   },
   "sandbox": {
     "network": {
