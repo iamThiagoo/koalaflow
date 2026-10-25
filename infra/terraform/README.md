@@ -12,6 +12,7 @@ infra/terraform/
     prod/
       site/            # marketing site (apps/site) + its deploy role
       network/         # VPC, public/private subnets, single NAT gateway
+      ecr/             # container image repositories (api, app) + push role
   modules/
     static-site/       # private S3 + CloudFront (OAC) + ACM + DNS + viewer-request function
     github-oidc-role/  # IAM role assumable from GitHub Actions via OIDC
@@ -111,7 +112,17 @@ Run from `infra/terraform` with admin credentials for the target account.
    gateway costs about US$ 33/month while it exists; run `terraform destroy` on this root to stop
    paying when nothing uses it.
 
-6. **Adding the domain later**
+6. **ECR**
+
+   ```sh
+   terraform -chdir=envs/prod/ecr init
+   terraform -chdir=envs/prod/ecr apply
+   ```
+
+   Add the repository variable `ECR_PUSH_ROLE_ARN` (`ecr_push_role_arn`). The role can push only
+   from `main`, to the `koalaflow-api` and `koalaflow-app` repositories.
+
+7. **Adding the domain later**
 
    Set `domain_name` in `global/terraform.tfvars`, apply `global`, delegate the name servers and
    wait for `dig NS`, then apply `envs/prod/site` (adds the certificate, aliases and DNS records in
