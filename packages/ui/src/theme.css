@@ -16,13 +16,18 @@
   --color-text-secondary: #5f7089;
   --color-text-body: #18181b;
   --color-text-kpi: #22344a;
+  --color-text-tertiary: #90a1b9;
 
+  --color-background: #f5f7fa;
   --color-surface: #ffffff;
   --color-surface-subtle: #f8fafc;
   --color-surface-muted: #f1f5f9;
   --color-border: #e2e8f0;
   --color-border-card: #e4e4e7;
   --color-border-active: #e7edee;
+
+  --color-disabled: #e2e8f0;
+  --color-disabled-foreground: #90a1b9;
 
   --color-danger: #e7000b;
   --color-badge-info: #eff6ff;
