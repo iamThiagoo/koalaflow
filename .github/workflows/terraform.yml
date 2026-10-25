@@ -61,6 +61,9 @@ jobs:
             envs/prod/api:
               - infra/terraform/envs/prod/api/**
               - .github/workflows/terraform.yml
+            envs/prod/app:
+              - infra/terraform/envs/prod/app/**
+              - .github/workflows/terraform.yml
 
   plan:
     needs: changes

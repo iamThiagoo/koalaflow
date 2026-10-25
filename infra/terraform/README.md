@@ -15,6 +15,7 @@ infra/terraform/
       ecr/             # container image repositories (api, app) + push role
       data/            # RDS Postgres + ElastiCache Redis (private subnets)
       api/             # ECS Fargate cluster + api service (Cloud Map, secrets)
+      app/             # ECS Fargate app service + ALB + CloudFront
   modules/
     static-site/       # private S3 + CloudFront (OAC) + ACM + DNS + viewer-request function
     github-oidc-role/  # IAM role assumable from GitHub Actions via OIDC
@@ -149,7 +150,19 @@ Run from `infra/terraform` with admin credentials for the target account.
    image exists in ECR; then set `image_tag` and `desired_count = 1` and apply again. It adds the
    api's ingress rules to the database and Redis security groups.
 
-9. **Adding the domain later**
+9. **App**
+
+   ```sh
+   terraform -chdir=envs/prod/app init
+   terraform -chdir=envs/prod/app apply
+   ```
+
+   Apply it after `network`, `ecr`, `api` and `site`. `desired_count` is 0 in `terraform.tfvars` until an
+   image exists in ECR; then set `image_tag` and `desired_count = 1` and apply again. After the first
+   apply, set `better_auth_url` in `envs/prod/api/terraform.tfvars` to the `app_url` output and apply
+   `api` again. The app is reachable only through CloudFront; the ALB accepts CloudFront addresses only.
+
+10. **Adding the domain later**
 
    Set `domain_name` in `global/terraform.tfvars`, apply `global`, delegate the name servers and
    wait for `dig NS`, then apply `envs/prod/site` (adds the certificate, aliases and DNS records in
