@@ -82,5 +82,6 @@ jobs:
         env:
           OPENSPEC_TELEMETRY: '0'
       - run: cp apps/site/.env.example apps/site/.env
+      - run: cp apps/api/.env.example apps/api/.env
       - run: pnpm exec nx db-migrate @koalaflow/api
       - run: pnpm exec nx affected -t lint test build typecheck e2e
