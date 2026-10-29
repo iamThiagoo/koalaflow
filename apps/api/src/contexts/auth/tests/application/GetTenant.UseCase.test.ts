@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { GetTenantUseCase } from '../../application/get-tenant.use-case.js';
-import type { OrganizationRepository } from '../../domain/organization.repository.js';
+import { GetTenantUseCase } from '../../application/GetTenant.UseCase.js';
+import type { AbstractOrganizationRepository } from '../../domain/AbstractOrganization.Repository.js';
 
 const roles: Record<string, string> = { 'org-1:user-1': 'owner' };
-const organizations: OrganizationRepository = {
+const organizations: AbstractOrganizationRepository = {
   findMemberRole: async (organizationId, userId) =>
     roles[`${organizationId}:${userId}`] ?? null,
   findOldestOrganizationId: async () => null,

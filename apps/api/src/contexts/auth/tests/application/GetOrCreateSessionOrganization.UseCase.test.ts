@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { GetOrCreateSessionOrganizationUseCase } from '../../application/get-or-create-session-organization.use-case.js';
-import type { OrganizationRepository } from '../../domain/organization.repository.js';
-import type { User, UserRepository } from '../../domain/user.repository.js';
+import { GetOrCreateSessionOrganizationUseCase } from '../../application/GetOrCreateSessionOrganization.UseCase.js';
+import type { AbstractOrganizationRepository } from '../../domain/AbstractOrganization.Repository.js';
+import type {
+  AbstractUserRepository,
+  User,
+} from '../../domain/AbstractUser.Repository.js';
 
 function setup(existing: string | null, user: User | null) {
   const created: { name: string; ownerId: string }[] = [];
-  const organizations: OrganizationRepository = {
+  const organizations: AbstractOrganizationRepository = {
     findMemberRole: async () => null,
     findOldestOrganizationId: async () => existing,
     createWithOwner: async (name, ownerId) => {
@@ -13,7 +16,7 @@ function setup(existing: string | null, user: User | null) {
       return 'org-new';
     },
   };
-  const users: UserRepository = { findById: async () => user };
+  const users: AbstractUserRepository = { findById: async () => user };
   const useCase = new GetOrCreateSessionOrganizationUseCase(
     organizations,
     users,

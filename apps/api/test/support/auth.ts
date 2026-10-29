@@ -1,5 +1,5 @@
 import { randomInt, randomUUID } from 'node:crypto';
-import { EmailSender } from '../../src/identity/infrastructure/email.sender.js';
+import { EmailSender } from '../../src/contexts/auth/infra/Email.Sender.js';
 import type { TestApp } from './start-app.js';
 
 export const appOrigin = 'http://localhost:3001';

@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Module, Post } from '@nestjs/common';
-import type { TenantContext } from '../../src/identity/domain/tenant-context.js';
-import { CurrentTenant } from '../../src/identity/infrastructure/current-tenant.decorator.js';
+import type { TenantContext } from '../../src/contexts/auth/domain/TenantContext.js';
+import { CurrentTenant } from '../../src/contexts/auth/infra/CurrentTenant.Decorator.js';
 
 /**
  * A tenant-scoped route, closed like any route without @Public(); it echoes the tenant it received.

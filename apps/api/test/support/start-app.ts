@@ -4,7 +4,7 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
-import { AppModule } from '../../src/app.module.js';
+import { AppModule } from '../../src/App.Module.js';
 
 export type LogLine = Record<string, unknown> & { level: number; msg?: string };
 

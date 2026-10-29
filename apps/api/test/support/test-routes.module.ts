@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Module, Post, Res } from '@nestjs/common';
 import { Matches } from 'class-validator';
 import type { Response } from 'express';
-import { Public } from '../../src/identity/infrastructure/public.decorator.js';
+import { Public } from '../../src/contexts/auth/infra/Public.Decorator.js';
 
 export const internalErrorMessage =
   'connect ECONNREFUSED db-internal.local:5432 for user "admin"';
