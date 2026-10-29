@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { OrganizationRepository } from '../domain/organization.repository.js';
-import { UserRepository } from '../domain/user.repository.js';
+import { AbstractOrganizationRepository } from '../domain/AbstractOrganization.Repository.js';
+import { AbstractUserRepository } from '../domain/AbstractUser.Repository.js';
 
 /**
  * Rule: every user belongs to an organization; the oldest membership is the one a new session starts in.
@@ -9,8 +9,8 @@ import { UserRepository } from '../domain/user.repository.js';
 @Injectable()
 export class GetOrCreateSessionOrganizationUseCase {
   constructor(
-    private readonly organizations: OrganizationRepository,
-    private readonly users: UserRepository,
+    private readonly organizations: AbstractOrganizationRepository,
+    private readonly users: AbstractUserRepository,
   ) {}
 
   async execute(userId: string): Promise<string> {

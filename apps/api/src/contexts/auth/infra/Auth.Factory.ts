@@ -6,10 +6,10 @@ import { betterAuth } from 'better-auth';
 import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { emailOTP, organization } from 'better-auth/plugins';
 import { Redis } from 'ioredis';
-import { GetOrCreateSessionOrganizationUseCase } from '../application/get-or-create-session-organization.use-case.js';
-import { generateCode, normalizeCode } from '../domain/sign-in-code.js';
-import { EmailSender } from './email.sender.js';
-import { Auth } from './iauth.js';
+import { GetOrCreateSessionOrganizationUseCase } from '../application/GetOrCreateSessionOrganization.UseCase.js';
+import { generateCode, normalizeCode } from '../domain/SignInCode.js';
+import { EmailSender } from './Email.Sender.js';
+import { Auth } from './IAuth.js';
 
 export function createAuth(
   em: EntityManager,
@@ -92,9 +92,6 @@ export function createAuth(
         sendVerificationOTP: async ({ email, otp, type }) => {
           if (type !== 'sign-in') return;
 
-          /**
-           * Rule: INCR and EXPIRE run in one script, so a counter never outlives its hour
-           */
           const sent = await redis.eval(
             `local sent = redis.call('INCR', KEYS[1])
               if sent == 1 then redis.call('EXPIRE', KEYS[1], 3600) end

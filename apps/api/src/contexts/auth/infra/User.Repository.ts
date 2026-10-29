@@ -1,12 +1,12 @@
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import {
+  AbstractUserRepository,
   type User,
-  UserRepository as UserRepositoryPort,
-} from '../domain/user.repository.js';
+} from '../domain/AbstractUser.Repository.js';
 
 @Injectable()
-export class UserRepository extends UserRepositoryPort {
+export class UserRepository extends AbstractUserRepository {
   constructor(private readonly em: EntityManager) {
     super();
   }

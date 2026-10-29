@@ -3,6 +3,6 @@ export interface User {
   email: string;
 }
 
-export abstract class UserRepository {
+export abstract class AbstractUserRepository {
   abstract findById(id: string): Promise<User | null>;
 }

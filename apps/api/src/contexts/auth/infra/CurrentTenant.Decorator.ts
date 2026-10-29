@@ -1,5 +1,5 @@
 import { createParamDecorator, type ExecutionContext } from '@nestjs/common';
-import type { TenantContext } from '../domain/tenant-context.js';
+import type { TenantContext } from '../domain/TenantContext.js';
 
 export type TenantRequest = { tenant?: TenantContext };
 

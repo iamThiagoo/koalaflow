@@ -8,8 +8,8 @@ import {
 } from '@nestjs/common';
 import { toNodeHandler } from 'better-auth/node';
 import type { Request, Response } from 'express';
-import { AUTH, type Auth } from './iauth.js';
-import { Public } from './public.decorator.js';
+import { AUTH, type Auth } from './IAuth.js';
+import { Public } from './Public.Decorator.js';
 
 /**
  * Rule: only the auth routes the product uses are served

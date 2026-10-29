@@ -1,12 +1,12 @@
 import { EntityManager } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import { OrganizationRepository as OrganizationRepositoryPort } from '../domain/organization.repository.js';
+import { AbstractOrganizationRepository } from '../domain/AbstractOrganization.Repository.js';
 
 /**
  * Rule: reads and writes Better Auth's tables with raw SQL on MikroORM's connection; they have no entity.
  */
 @Injectable()
-export class OrganizationRepository extends OrganizationRepositoryPort {
+export class OrganizationRepository extends AbstractOrganizationRepository {
   constructor(private readonly em: EntityManager) {
     super();
   }

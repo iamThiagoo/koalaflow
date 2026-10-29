@@ -1,4 +1,4 @@
-export abstract class OrganizationRepository {
+export abstract class AbstractOrganizationRepository {
   abstract findMemberRole(
     organizationId: string,
     userId: string,

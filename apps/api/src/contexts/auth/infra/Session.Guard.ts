@@ -9,10 +9,10 @@ import {
 import { Reflector } from '@nestjs/core';
 import { fromNodeHeaders } from 'better-auth/node';
 import type { Request } from 'express';
-import { GetTenantUseCase } from '../application/get-tenant.use-case.js';
-import type { TenantRequest } from './current-tenant.decorator.js';
-import { AUTH, type Auth } from './iauth.js';
-import { IS_PUBLIC } from './public.decorator.js';
+import { GetTenantUseCase } from '../application/GetTenant.UseCase.js';
+import type { TenantRequest } from './CurrentTenant.Decorator.js';
+import { AUTH, type Auth } from './IAuth.js';
+import { IS_PUBLIC } from './Public.Decorator.js';
 
 const unsafeMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
