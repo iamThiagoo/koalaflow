@@ -1,11 +1,11 @@
 import { type DynamicModule, Module } from '@nestjs/common';
 import type { DestinationStream } from 'pino';
-import { IdentityModule } from './identity/infrastructure/identity.module.js';
-import { DatabaseModule } from './platform/database/database.module.js';
-import { HealthModule } from './platform/health/health.module.js';
-import { HttpModule } from './platform/http/http.module.js';
-import { LoggingModule } from './platform/logging/logging.module.js';
-import { RedisModule } from './platform/redis/redis.module.js';
+import { AuthModule } from './contexts/auth/infra/Auth.Module.js';
+import { HealthModule } from './health/Health.Module.js';
+import { RedisModule } from './infra/cache/Redis.Module.js';
+import { DatabaseModule } from './infra/database/Database.Module.js';
+import { HttpModule } from './infra/http/Http.Module.js';
+import { LoggingModule } from './infra/logging/Logging.Module.js';
 
 export interface AppModuleOptions {
   logStream?: DestinationStream;
@@ -22,7 +22,7 @@ export class AppModule {
         DatabaseModule,
         RedisModule,
         HealthModule,
-        IdentityModule,
+        AuthModule,
       ],
     };
   }

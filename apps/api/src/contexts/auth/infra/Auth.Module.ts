@@ -38,7 +38,7 @@ import { UserRepository } from './user.repository.js';
     { provide: APP_GUARD, useClass: SessionGuard },
   ],
 })
-export class IdentityModule implements BeforeApplicationShutdown {
+export class AuthModule implements BeforeApplicationShutdown {
   constructor(@Inject(AUTH) private readonly auth: Auth) {}
 
   async beforeApplicationShutdown(): Promise<void> {

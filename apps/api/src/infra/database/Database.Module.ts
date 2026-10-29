@@ -1,7 +1,7 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Module } from '@nestjs/common';
-import { mikroOrmOptions } from './mikro-orm.config.js';
+import { mikroOrmOptions } from './MikroOrm.Config.js';
 
 @Module({
   imports: [

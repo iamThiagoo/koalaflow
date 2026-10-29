@@ -112,8 +112,8 @@
   "scripts": {
     "test": "vitest run",
     "e2e": "vitest run --config vitest.e2e.config.ts",
-    "db-migrate": "node --env-file-if-exists=.env node_modules/@mikro-orm/cli/cli.js migration:up --config dist/platform/database/mikro-orm.config.js",
-    "db-migration-create": "node --env-file-if-exists=.env node_modules/@mikro-orm/cli/cli.js migration:create --config dist/platform/database/mikro-orm.config.js --path src/platform/database/migrations"
+    "db-migrate": "node --env-file-if-exists=.env node_modules/@mikro-orm/cli/cli.js migration:up --config dist/infra/database/MikroOrm.Config.js",
+    "db-migration-create": "node --env-file-if-exists=.env node_modules/@mikro-orm/cli/cli.js migration:create --config dist/infra/database/MikroOrm.Config.js --path src/infra/database/migrations"
   },
   "dependencies": {
     "@aws-sdk/client-sesv2": "^3.1156.0",

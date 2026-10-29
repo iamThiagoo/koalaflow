@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import type { Reflector } from '@nestjs/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { GetTenantUseCase } from '../application/get-tenant.use-case.js';
-import type { Auth } from './iauth.js';
-import { SessionGuard } from './session.guard.js';
+import type { GetTenantUseCase } from '../../application/get-tenant.use-case.js';
+import type { Auth } from '../../infra/iauth.js';
+import { SessionGuard } from '../../infra/session.guard.js';
 
 const appOrigin = 'http://localhost:3001';
 const session = {

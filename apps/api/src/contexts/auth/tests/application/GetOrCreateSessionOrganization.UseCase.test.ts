@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { OrganizationRepository } from '../domain/organization.repository.js';
-import type { User, UserRepository } from '../domain/user.repository.js';
-import { GetOrCreateSessionOrganizationUseCase } from './get-or-create-session-organization.use-case.js';
+import { GetOrCreateSessionOrganizationUseCase } from '../../application/get-or-create-session-organization.use-case.js';
+import type { OrganizationRepository } from '../../domain/organization.repository.js';
+import type { User, UserRepository } from '../../domain/user.repository.js';
 
 function setup(existing: string | null, user: User | null) {
   const created: { name: string; ownerId: string }[] = [];

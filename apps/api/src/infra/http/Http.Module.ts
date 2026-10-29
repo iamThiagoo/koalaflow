@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { json } from 'express';
-import { GlobalExceptionFilter } from './exception.filter.js';
-import { StrictValidationPipe } from './validation.pipe.js';
+import { GlobalExceptionFilter } from './Exception.Filter.js';
+import { StrictValidationPipe } from './Validation.Pipe.js';
 
 @Module({
   providers: [

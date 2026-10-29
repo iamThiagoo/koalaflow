@@ -3,7 +3,7 @@ import {
   HttpStatus,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiException } from './api.exception.js';
+import { ApiException } from './Api.Exception.js';
 
 export class StrictValidationPipe extends ValidationPipe {
   constructor() {

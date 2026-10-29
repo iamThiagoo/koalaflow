@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { OrganizationRepository } from '../domain/organization.repository.js';
-import { GetTenantUseCase } from './get-tenant.use-case.js';
+import { GetTenantUseCase } from '../../application/get-tenant.use-case.js';
+import type { OrganizationRepository } from '../../domain/organization.repository.js';
 
 const roles: Record<string, string> = { 'org-1:user-1': 'owner' };
 const organizations: OrganizationRepository = {

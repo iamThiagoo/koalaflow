@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateCode, normalizeCode } from './sign-in-code.js';
+import { generateCode, normalizeCode } from '../../domain/sign-in-code.js';
 
 const ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 

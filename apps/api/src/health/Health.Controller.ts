@@ -1,7 +1,7 @@
 import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
 import type { Response } from 'express';
-import { Public } from '../../identity/infrastructure/public.decorator.js';
-import { HealthService } from './health.service.js';
+import { Public } from '../contexts/auth/infra/Public.Decorator.js';
+import { HealthService } from './Health.Service.js';
 
 /**
  * Rule: health endpoints are public and return only fixed statuses, never versions, hosts or errors.

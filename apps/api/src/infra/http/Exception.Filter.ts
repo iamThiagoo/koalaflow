@@ -7,7 +7,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { ApiException } from './api.exception.js';
+import { ApiException } from './Api.Exception.js';
 
 const genericMessages: Record<number, string> = {
   [HttpStatus.NOT_FOUND]: 'Resource not found',
