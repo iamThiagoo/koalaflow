@@ -17,8 +17,8 @@ Decided with the user while exploring (motivation in proposal.md - Why):
 - Passwordless sign-in: a 6-character alphanumeric email code, plus Google.
 - Better Auth over a custom implementation because it means less code of our own; we use its
   defaults unless there is a reason not to.
-- Bounded contexts live in `apps/api/src/<context>/` until a second app imports one; use cases are
-  plain classes with `execute()` in `*.use-case.ts` files (no command/query bus until there are
+- Bounded contexts live in `apps/api/src/contexts/<context>/` until a second app imports one; use cases are
+  plain classes with `execute()` in `<Name>.UseCase.ts` files (no command/query bus until there are
   domain events). `CLAUDE.md` and `openspec/config.yaml` record both rules.
 
 Verified against `better-auth@1.7.12` (the latest version, which includes the fixes for the 2026
@@ -32,7 +32,7 @@ server-side creation with `userId`, `disableOrganizationDeletion`). Telemetry is
 **Goals:**
 - One place that turns a request into `{ userId, organizationId, role }` or a rejection, so later
   contexts only declare routes and filter by `organizationId`.
-- Better Auth stays inside `src/identity/infrastructure`; other contexts import only `@Public()`,
+- Better Auth stays inside `src/contexts/auth/infra`; other contexts import only `@Public()`,
   `@CurrentTenant()` and the `TenantContext` type.
 
 **Non-Goals:**
@@ -44,31 +44,31 @@ server-side creation with `userId`, `disableOrganizationDeletion`). Telemetry is
 
 ## Decisions
 
-### Layout: `apps/api/src/identity`
+### Layout: `apps/api/src/contexts/auth`
 ```
-apps/api/src/identity/
+apps/api/src/contexts/auth/
   domain/
-    sign-in-code.ts                        generate + normalize (pure, node:crypto) + unit test
-    tenant-context.ts                      type TenantContext { userId, organizationId, role }
-    organization.repository.ts, user.repository.ts  repository ports (abstract classes, Nest tokens)
+    SignInCode.ts                        generate + normalize (pure, node:crypto) + unit test
+    TenantContext.ts                      type TenantContext { userId, organizationId, role }
+    AbstractOrganization.Repository.ts, AbstractUser.Repository.ts  repository ports (abstract classes, Nest tokens)
   application/
-    get-tenant.use-case.ts                 (userId, activeOrganizationId) -> TenantContext | null
-    get-or-create-session-organization.use-case.ts  user -> organizationId (oldest membership or new org)
-  infrastructure/
+    GetTenant.UseCase.ts                 (userId, activeOrganizationId) -> TenantContext | null
+    GetOrCreateSessionOrganization.UseCase.ts  user -> organizationId (oldest membership or new org)
+  infra/
     auth.ts                                Better Auth instance (provider factory)
-    auth.controller.ts                     @All('auth/*path'): allowlist, then Better Auth handler
-    session.guard.ts                       global guard: public? -> session -> origin -> GetTenant
-    public.decorator.ts, current-tenant.decorator.ts
-    email.sender.ts                        SES v2 SendEmail
-    organization.repository.ts, user.repository.ts  repository adapters (raw SQL on MikroORM's connection)
-    identity.module.ts                     providers + APP_GUARD
+    Auth.Controller.ts                     @All('auth/*path'): allowlist, then Better Auth handler
+    Session.Guard.ts                       global guard: public? -> session -> origin -> GetTenant
+    Public.Decorator.ts, CurrentTenant.Decorator.ts
+    Email.Sender.ts                        SES v2 SendEmail
+    Organization.Repository.ts, User.Repository.ts  repository adapters (raw SQL on MikroORM's connection)
+    Auth.Module.ts                     providers + APP_GUARD
 ```
 
 The use cases hold our rules and are what the unit tests target. The guard, the controller and the
 Better Auth hook are adapters that call them. The sign-in, Google and sign-out flows belong to
 Better Auth and are not wrapped in use cases, since wrapping them would add no rule. The use cases
 read and write Better Auth's tables through repository ports declared in `domain` (abstract
-classes, so they double as Nest injection tokens); the adapters in `infrastructure` run bound raw
+classes, so they double as Nest injection tokens); the adapters in `infra` run bound raw
 SQL on MikroORM's connection, the same pool Better Auth uses through `em.getKysely()`, with no
 MikroORM entity for those tables. `OrganizationRepository.createWithOwner` inserts the
 organization and the `owner` membership in one statement.
@@ -131,7 +131,7 @@ such as the organization creation below).
   the format but not the length. Sign-in needs no check, since no code is ever issued for such an email.
 - Better Auth checks its schema in the background at startup (auth requests also await it). The
   api must start with the database down (liveness/readiness), so the check is not awaited at
-  startup; `IdentityModule.beforeApplicationShutdown` waits for it instead, because closing the
+  startup; `AuthModule.beforeApplicationShutdown` waits for it instead, because closing the
   pool under that query hung `app.close()` (found as a flaky e2e during apply).
 - The provider is typed with a narrow `Auth` interface (`handler`, `api.getSession`, `$context`):
   Better Auth's inferred type cannot be emitted in declaration files, and the narrow type lists
@@ -172,7 +172,7 @@ makes the organization and membership atomic. `allowUserToCreateOrganization: fa
 organization mutations.
 
 ### Guard and tenant
-`SessionGuard` is registered as `APP_GUARD` from `IdentityModule`, so every route in the api,
+`SessionGuard` is registered as `APP_GUARD` from `AuthModule`, so every route in the api,
 current and future, is closed unless it is marked `@Public()`. It runs these steps in order:
 1. `@Public()` metadata: the route runs.
 2. `auth.api.getSession({ headers })`; none → `ApiException(401)`.
@@ -201,10 +201,10 @@ Alternative considered: Mailpit + SMTP (nodemailer) locally and the SES API in p
 means two transports, one more dependency, and static SMTP credentials if SMTP were used in
 production too.
 
-### Redis: platform module
-`apps/api/src/platform/redis/` provides one `ioredis` client (`Redis` class as the injection token)
+### Redis: cache module
+`apps/api/src/infra/cache/` provides one `ioredis` client (`Redis` class as the injection token)
 from `REDIS_URL`, closed on shutdown, and adds the Redis readiness check. In production
-`rediss:` is required, failing like `DB_SSL` does and naming only the variable. Redis is platform
+`rediss:` is required, failing like `DB_SSL` does and naming only the variable. Redis is infra
 code because rate limiting and caching will serve every context.
 
 ### Configuration
@@ -264,7 +264,7 @@ new generated migration.
 |---|---|---|
 | `better-auth` (exact `1.7.12`) | identity | auth flows, sessions, OAuth, organizations |
 | `@better-auth/redis-storage` (`1.7.12`) | identity | official secondary storage for sessions and rate limits |
-| `ioredis` (`^5`, its peer range) | api platform | Redis client for storage, the per-email cap and readiness |
+| `ioredis` (`^5`, its peer range) | api infra | Redis client for storage, the per-email cap and readiness |
 | `@aws-sdk/client-sesv2` | identity | sending the code; the SDK is already the AWS path for later contexts |
 
 Each one passes `pnpm audit --prod` and an install-script review (`allowBuilds`) when added.

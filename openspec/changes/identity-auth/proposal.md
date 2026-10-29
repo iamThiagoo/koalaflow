@@ -12,9 +12,9 @@ changing them later means rewriting every query filter and every S3 key.
 - **BREAKING (docs)**: authentication moves from `apps/app` to `apps/api`. Better Auth runs inside
   the api and owns its tables in the `public` Postgres schema; `apps/app` is a frontend only. `CLAUDE.md` and
   `openspec/config.yaml` are corrected.
-- Add the `identity` bounded context in `apps/api/src/identity/`, and record in `CLAUDE.md` that
-  bounded contexts live in `apps/api/src/<context>` (moved to `packages/` only when a second app
-  imports one) and that use cases are `*.use-case.ts` classes.
+- Add the `identity` bounded context in `apps/api/src/contexts/auth/`, and record in `CLAUDE.md` that
+  bounded contexts live in `apps/api/src/contexts/<context>` (moved to `packages/` only when a second app
+  imports one) and that use cases are `<Name>.UseCase.ts` classes.
 - Passwordless sign-in: a 6-character alphanumeric code sent by email (implicit sign-up), or
   Google. A Google account and an email-code account with the same address are the same user.
 - Tenant = organization. Each user gets a personal organization as `owner` at first sign-in, and
@@ -49,9 +49,9 @@ changing them later means rewriting every query filter and every S3 key.
 ## Impact
 
 - Bounded contexts: `identity` (new). No other context exists yet.
-- Code: `apps/api` (new `src/identity/`, module wiring, `@Public()` on health, readiness check,
+- Code: `apps/api` (new `src/contexts/auth/`, module wiring, `@Public()` on health, readiness check,
   env); `apps/app` (`proxy.ts`, `/login`, home page, server-side api helper, headers); new
-  migration in `apps/api/src/platform/database/migrations/` for Better Auth's tables;
+  migration in `apps/api/src/infra/database/migrations/` for Better Auth's tables;
   `.github/workflows/ci.yml` (Redis service for e2e); `CLAUDE.md`, `openspec/config.yaml`.
 - Dependencies: `better-auth`, `@better-auth/redis-storage`, `ioredis`, `@aws-sdk/client-sesv2`
   (api side only; reasons in design.md). `apps/app` adds none.

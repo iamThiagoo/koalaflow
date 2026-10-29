@@ -29,11 +29,11 @@ Nx 23 + pnpm 11 workspaces (`apps/*`, `packages/*`, `infra/terraform`), Node 24 
 - `apps/app`: Next 16 (App Router, Turbopack) creator dashboard, frontend only (no auth logic; `proxy.ts` forwards `/api/*` to the api). The player is its `/embed/[videoId]` route with Video.js 10 (`@videojs/react`); there is no separate player app.
 - `apps/site`: Next 16 static export (`output: 'export'`), public marketing site for the apex domain, pt-BR only.
 - `apps/worker` (planned): Node + FFmpeg, consumes SQS, outputs HLS.
-- `packages/ui`: shared design tokens (`@koalaflow/ui/theme.css`, a Tailwind 4 `@theme`) imported by `apps/app` and `apps/site`; add shared React components only when both apps need the same one. Not a bounded context (no `domain/application/infrastructure` layout).
+- `packages/ui`: shared design tokens (`@koalaflow/ui/theme.css`, a Tailwind 4 `@theme`) imported by `apps/app` and `apps/site`; add shared React components only when both apps need the same one. Not a bounded context (no `domain/application/infra` layout).
 
 ### `apps/api`
 
-Runtime code shared by every context lives in `src/platform/` (config, logging, http, database, redis, health). Run the api and the app locally:
+Runtime code shared by every context lives in the root of `src/` (config, logging, http, database, redis, health). Run the api and the app locally:
 
 ```sh
 docker compose up -d                      # Postgres, Redis, Floci (S3/SQS, :4566) on 127.0.0.1 (POSTGRES_PORT etc. to remap)
@@ -51,7 +51,7 @@ curl -s http://127.0.0.1:4566/_aws/ses    # emails Floci "sent", including sign-
 - Config is read from `process.env` where each setting is used (`main.ts`, `LoggingModule`, `mikroOrmOptions`, `RedisModule`, `createAuth`), when the module starts, not at import. No startup validation beyond the production refusals (`REDIS_URL` without TLS, a missing or short `BETTER_AUTH_SECRET`). Add new variables to `.env.example`.
 - Client errors come only from `ApiException`; the global `StrictValidationPipe` validates every parameter typed with a class-validator DTO class and throws it as `400 Validation failed`. Any other exception becomes a generic message for its status. Better Auth's `/api/auth/*` routes answer with its own `{ code, message }` errors.
 - Every route needs a session unless marked `@Public()` (global `SessionGuard`); tenant-scoped handlers read the tenant with `@CurrentTenant()` and filter every query by its `organizationId`.
-- Migrations live in `src/platform/database/migrations/`; create one against the local database with `pnpm nx db-migration-create @koalaflow/api -- --name <name>` (MikroORM CLI).
+- Migrations live in `src/infra/database/migrations/`; create one against the local database with `pnpm nx db-migration-create @koalaflow/api -- --name <name>` (MikroORM CLI).
 - `e2e` boots the real app against Postgres and Redis (compose locally, service containers in CI).
 
 ### Next apps (`apps/app`, `apps/site`)
@@ -73,9 +73,9 @@ curl -s http://127.0.0.1:4566/_aws/ses    # emails Floci "sent", including sign-
 
 ## Architecture (DDD)
 
-- Bounded contexts live in `apps/api/src/<context>/{domain,application,infrastructure}`; move one to `packages/<context>` only when a second app imports it (`apps/worker` talks to the api through SQS messages, not imports). Proposed contexts: identity, library, ingestion, processing, playback, analytics, billing.
+- Bounded contexts live in `apps/api/src/contexts/<context>/{domain,application,infra}`; move one to `packages/<context>` only when a second app imports it (`apps/worker` talks to the api through SQS messages, not imports). Proposed contexts: auth, library, ingestion, processing, playback, analytics, billing.
 - `domain` has no framework or infrastructure dependencies.
-- `application` holds the use cases: one class with `execute()` per `*.use-case.ts` file (`get-tenant.use-case.ts`). Controllers, guards and library hooks in `infrastructure` call them; business rules live in the use cases, not in the adapters.
+- `application` holds the use cases: one class with `execute()` per `<Name>.UseCase.ts` file (`GetTenant.UseCase.ts`). Controllers, guards and library hooks in `infra` call them; business rules live in the use cases, not in the adapters.
 - Events inside a context: `@nestjs/cqrs` (`AggregateRoot.apply()` + `EventBus`), added with the first domain event. Between contexts/services: outbox table in the same transaction → relay → SQS (with DLQ).
 - Postgres is the main database (MikroORM), Redis only for cache/rate limit. No MongoDB; ClickHouse later for playback analytics.
 - Every table lives in the `public` schema, Better Auth's included. Better Auth's tables arrive as raw SQL migrations and are listed in `schemaGenerator.skipTables`, otherwise MikroORM's diff drops every table that has no entity.
@@ -84,7 +84,7 @@ curl -s http://127.0.0.1:4566/_aws/ses    # emails Floci "sent", including sign-
 Decided:
 - Product model: Panda-style B2B protected content (private by default, domain-restricted embeds, signed URLs; no public discovery pages).
 - Unit test runner: Vitest + SWC (SWC keeps Nest decorator metadata).
-- Auth: Better Auth (self-hosted, data in Postgres) in `apps/api`, owned by the `identity` context. Passwordless (email code, Google); the tenant is the session's active organization.
+- Auth: Better Auth (self-hosted, data in Postgres) in `apps/api`, owned by the `auth` context. Passwordless (email code, Google); the tenant is the session's active organization.
 
 ## Constraints
 

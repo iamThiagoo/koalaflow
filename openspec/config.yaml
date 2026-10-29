@@ -8,14 +8,14 @@ context: |
   upload -> FFmpeg transcoding to HLS -> signed CloudFront delivery -> embedded player.
 
   Monorepo: Nx + pnpm, Node 24. Apps:
-  - apps/api: NestJS 12 (ESM), MikroORM 7, Better Auth, nestjs-pino, class-validator, built with tsc; shared runtime code in apps/api/src/platform, bounded contexts in apps/api/src/<context>
+  - apps/api: NestJS 12 (ESM), MikroORM 7, Better Auth, nestjs-pino, class-validator, built with tsc; bounded contexts in apps/api/src/contexts, shared runtime code in apps/api/src/infra
   - apps/app: Next (creator dashboard, frontend only; proxy.ts forwards /api/* to the api; the player is the /embed/[videoId] route, Video.js 10)
   - apps/site: Next static export (public marketing site, pt-BR only)
   - apps/worker: Node + FFmpeg, consumes SQS
 
   Architecture (DDD):
-  - Bounded contexts live in apps/api/src/<context>/{domain,application,infrastructure}; moved to packages/<context> only when a second app imports one
-  - application holds use cases: one class with execute() per *.use-case.ts file, called by controllers, guards and hooks
+  - Bounded contexts live in apps/api/src/contexts/<context>/{domain,application,infra}; moved to packages/<context> only when a second app imports one
+  - application holds use cases: one class with execute() per <Name>.UseCase.ts file, called by controllers, guards and hooks
   - packages/ui is the shared frontend design-token package, not a bounded context
   - domain has no framework or infrastructure dependencies
   - Events inside a context: @nestjs/cqrs EventBus (added with the first domain event); between contexts/services: outbox table -> SQS
@@ -43,7 +43,7 @@ context: |
   - B2B protected content (Panda style): videos private by default, domain-restricted embeds,
     signed URLs, no public discovery pages
   - Unit tests: Vitest + SWC
-  - Auth: Better Auth (self-hosted, data in Postgres), owned by the identity context
+  - Auth: Better Auth (self-hosted, data in Postgres), owned by the auth context
   - No MongoDB: Postgres now, ClickHouse later for playback analytics
 
   Constraints:
