@@ -31,45 +31,11 @@ Nx 23 + pnpm 11 workspaces (`apps/*`, `packages/*`, `infra/terraform`), Node 24 
 - `apps/worker` (planned): Node + FFmpeg, consumes SQS, outputs HLS.
 - `packages/ui`: shared design tokens (`@koalaflow/ui/theme.css`, a Tailwind 4 `@theme`) imported by `apps/app` and `apps/site`; add shared React components only when both apps need the same one. Not a bounded context (no `domain/application/infra` layout).
 
-### `apps/api`
+Area details, read when the task touches the area:
 
-Runtime code shared by every context lives in the root of `src/` (config, logging, http, database, redis, health). Run the api and the app locally:
-
-```sh
-docker compose up -d                      # Postgres, Redis, Floci (S3/SQS, :4566) on 127.0.0.1 (POSTGRES_PORT etc. to remap)
-cp apps/api/.env.example apps/api/.env    # then set BETTER_AUTH_SECRET (openssl rand -base64 32)
-cp apps/app/.env.example apps/app/.env
-AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_REGION=us-east-1 \
-  aws --endpoint-url http://127.0.0.1:4566 sesv2 create-email-identity \
-  --email-identity no-reply@koalaflow.local  # Floci sender, once per Floci container
-pnpm nx db-migrate @koalaflow/api         # apply migrations from the build output
-pnpm nx dev @koalaflow/api                # http://localhost:3000/api/health/ready
-pnpm nx dev @koalaflow/app                # http://localhost:3001 (sign in with an email code)
-curl -s http://127.0.0.1:4566/_aws/ses    # emails Floci "sent", including sign-in codes
-```
-
-- Config is read from `process.env` where each setting is used (`main.ts`, `LoggingModule`, `mikroOrmOptions`, `RedisModule`, `createAuth`), when the module starts, not at import. No startup validation beyond the production refusals (`REDIS_URL` without TLS, a missing or short `BETTER_AUTH_SECRET`). Add new variables to `.env.example`.
-- Client errors come only from `ApiException`; the global `StrictValidationPipe` validates every parameter typed with a class-validator DTO class and throws it as `400 Validation failed`. Any other exception becomes a generic message for its status. Better Auth's `/api/auth/*` routes answer with its own `{ code, message }` errors.
-- Every route needs a session unless marked `@Public()` (global `SessionGuard`); tenant-scoped handlers read the tenant with `@CurrentTenant()` and filter every query by its `organizationId`.
-- Migrations live in `src/infra/database/migrations/`; create one against the local database with `pnpm nx db-migration-create @koalaflow/api -- --name <name>` (MikroORM CLI).
-- `e2e` boots the real app against Postgres and Redis (compose locally, service containers in CI).
-
-### Next apps (`apps/app`, `apps/site`)
-
-- No `@nx/next` (it pulls in webpack): targets come from `package.json` scripts; `typecheck` is `next typegen && tsc --noEmit` because `@nx/js/typescript` skips Next projects.
-- `apps/site` stays fully static: no proxy, redirects, cookies, server actions or route handlers that read the request. It reads `SITE_URL`, `APP_URL` and `SALES_CONTACT_URL` at build time, with no defaults in code: locally from `apps/site/.env` (copy `.env.example`), in CI from repository variables.
-- `apps/site/Dockerfile` is a local preview only (nginx mirroring the CloudFront rules); production is S3 + CloudFront, with no container or ECR. Build it from the repo root: `docker build -f apps/site/Dockerfile -t koalaflow-site . && docker run --rm -p 8080:8080 koalaflow-site`.
-- `apps/site/tsconfig.json` excludes `.next/dev/types/validator.ts`: `next dev` generates it with unused imports when metadata routes exist, breaking `noUnusedLocals`; `.next/types/validator.ts` still validates the routes.
-
-### Infrastructure
-
-`infra/terraform` is the Nx project `@koalaflow/infra`; its `README.md` covers the layout, setup, day-to-day work, rollback and adding a component or environment. One AWS account, `us-east-1`, prod only for now.
-
-- Roots, one state each: `bootstrap/` (applied by hand once), `global/`, `envs/<env>/<component>/`; shared code in `modules/`. Roots read each other only through `terraform_remote_state`. A new root must be added to the paths filter in `terraform.yml`, after the roots it reads.
-- State: S3 backend with `use_lockfile = true` (no DynamoDB). Commit `.terraform.lock.hcl` locked for `linux_amd64` and `darwin_arm64` (`terraform providers lock -platform=...`).
-- Pushing needs Terraform installed: the `lint` target runs `terraform fmt -check` + `validate` on every root. `test` runs Vitest on the CloudFront Function.
-- CloudFront Functions are plain scripts with a top-level `handler`: no ES module syntax, no `for...of` (the `cloudfront-js-2.0` runtime rejects it). Vitest runs them on Node, so check a new construct with `aws cloudfront test-function` before relying on it.
-- CI uses GitHub OIDC roles, never static AWS keys. `.github/workflows/terraform.yml` plans on PRs and applies on `main` behind the `production` environment; `.github/workflows/deploy-site.yml` publishes `apps/site` to S3/CloudFront on push to `main`.
+- `apps/api` (run locally, config, errors, migrations, e2e): `docs/api.md`.
+- `apps/app` and `apps/site` (Nx targets, static export, preview): `docs/next-apps.md`.
+- `infra/terraform` (roots, state, CloudFront Functions, CI roles): `docs/infrastructure.md`.
 
 ## Architecture (DDD)
 
@@ -103,65 +69,11 @@ OWASP Top 10, OWASP API Security Top 10 (for `apps/api`) and OWASP ASVS Level 2 
 A change is security-sensitive when it touches: authentication, sessions or tokens; authorization or tenant-scoped data; uploads, S3 keys, file paths or FFmpeg; playback signing, keys or embed domain rules; requests to URLs that come from input; raw SQL; IAM, networking or anything public; secrets; payments or webhooks; personal data; a new dependency or GitHub Action.
 
 - Before coding: list the threats, their mitigations and the effect on existing access rules (in `design.md` when using OpenSpec). Ask the user before accepting a risk without mitigation.
-- After coding: review the diff against the rules below (`/security-review` on the branch).
-- Other changes (copy, styling, refactors without new inputs) follow the rules below without a written threat analysis.
+- After coding: review the diff against `docs/security.md` (`/security-review` on the branch).
+- Other changes (copy, styling, refactors without new inputs) follow `docs/security.md` without a written threat analysis.
 - When reading or reviewing code, report vulnerabilities you notice (severity, `file:line`, suggested fix) even outside the task; fix them only when they are in scope.
 
-### Access control
-
-- Deny by default. Every api endpoint, Next server action and route handler authenticates and authorizes on the server; hiding UI is not a control.
-- The tenant comes from the authenticated session, never from body, query, path or headers. Every query on tenant data filters by it; another tenant's resource returns 404, not 403.
-- Ownership and permission checks live in the use cases (or Nest guards backed by them), so every entry point enforces them. Public IDs are UUIDs, never sequential.
-
-### Input and injection
-
-- Validate every external input at the boundary with a schema/DTO (type, length, format, enum) and reject unknown fields. External input includes HTTP, SQS messages, webhooks, file metadata and ffprobe output.
-- SQL only through MikroORM or bound parameters; sort fields and column names from input are mapped from an allowlist.
-- Run FFmpeg/ffprobe with `spawn`/`execFile` and an argument array (no shell, no flags from input).
-- S3 keys and file paths are built by the server from IDs (`<tenant>/<video>/...`); the client filename is display metadata only.
-
-### Uploads, media and playback
-
-- Presigned upload URLs are short-lived, bound to a server-chosen key, and limited in size and part count; the object is checked (size, ffprobe) before transcoding.
-- Uploaded media is hostile: FFmpeg runs with `-protocol_whitelist file` (crafted HLS/concat playlists can read local files or make requests), time/CPU/output limits, no secrets in its environment and no network beyond S3/SQS.
-- Signed CloudFront URLs/cookies are short-lived and scoped to one video's path; only the playback service reads the signing key.
-- Embed domain restriction is enforced with CSP `frame-ancestors` on `/embed/[videoId]` plus a server-checked playback token; `Referer` is only a hint.
-
-### Web apps and outbound requests
-
-- No `dangerouslySetInnerHTML` with user data. User-provided links must be `https:`; redirect targets come from an allowlist (no open redirects).
-- Modules that read secrets import `server-only`. Session cookies are `HttpOnly`, `Secure`, `SameSite=Lax` or stricter; state changes never use GET; cookie-authenticated api routes check `Origin` or a CSRF token.
-- `apps/app` sends CSP, HSTS, `X-Content-Type-Options` and `Referrer-Policy` (`apps/site` gets them from CloudFront).
-- Fetching a URL from input (webhooks, import by URL): `https:` only, block private, loopback and link-local addresses (including `169.254.169.254`) after DNS resolution and on redirects, with timeouts and size limits.
-- Incoming webhooks verify the signature over the raw body and a timestamp, and are idempotent.
-- Rate-limit login, token issuance and upload creation (Redis).
-
-### Errors and logs
-
-- Clients get a status, a generic message and a request id. Stack traces, SQL, paths and upstream errors stay in server logs; the api uses one global exception filter that never echoes unknown error messages.
-- Never log passwords, tokens, cookies, `Authorization` headers, signed or presigned URLs, or personal data; log IDs instead. Log authentication failures and denied access, without secrets.
-
-### Infrastructure and dependencies
-
-- Private by default: S3 public access block, OAC, databases in private subnets, no `0.0.0.0/0` ingress except 443 on a load balancer. Encrypt at rest; TLS 1.2+ in transit.
-- IAM least privilege: one role per workload, scoped actions and resources; a `*` needs a `Rule:` comment explaining why. Workflows set minimal `permissions`.
-- Add a dependency or GitHub Action only when the platform or an existing one does not cover it. Check maintenance and advisories (`pnpm audit --prod`), and name it in the design. A dependency with an install script must be listed in `allowBuilds` in `pnpm-workspace.yaml` (`true` only if the script is needed), or `pnpm install` fails in CI.
-
-### Security tests
-
-Follow the testing policy; add these only where the risk exists:
-
-- Protected endpoints/handlers: unauthenticated is rejected; another tenant's resource returns 404.
-- Validators: malicious or out-of-range input (path traversal in names, oversized values, unknown fields).
-- Tokens and signed URLs: expiry, scope and tampering are rejected.
-
-### Secrets and personal data
-
-- Never commit secrets or personal data (gitleaks guards pushes and CI, see Checks). `.env`, `.env.*` and `local.auto.tfvars` are git-ignored everywhere; only `.env.example` files are committed.
-- Terraform state keeps every value in plain text; `sensitive = true` only hides CLI output. Keep secrets out of state: RDS with `manage_master_user_password`, private keys (e.g. the CloudFront signed-URL key) generated outside Terraform and stored in Secrets Manager, Terraform gets only the public key.
-- Apps read secrets at runtime from Secrets Manager or SSM, never from `tfvars` or build-time env. Anything a Next app reads at build time, and every `NEXT_PUBLIC_*`, ends up in public files.
-- GitHub repository variables are printed in workflow logs; sensitive values go in secrets (e.g. `BUDGET_ALERT_EMAILS` → `TF_VAR_budget_alert_emails`, a `sensitive` variable).
-- The Terraform plan role reads resource configuration and the state, but is explicitly denied application data (objects outside the state bucket, secrets, parameters, KMS decrypt, table items, logs). A data source that needs such data requires changing `plan_data_guard` in `global/`.
+Rules by area (access control, input and injection, uploads and playback, web apps, errors and logs, infrastructure and dependencies, security tests, secrets): `docs/security.md`. Read it before coding or reviewing a security-sensitive change.
 
 ## Simplicity
 
@@ -195,10 +107,10 @@ Comments about business rules or design decisions are simple, short and objectiv
 
 ## Claude Code models
 
-`.claude/settings.json` sets `"model": "opusplan"`: Opus 5.5 in plan mode, Sonnet 5.5 outside it (Haiku for Claude Code's background tasks). There is no per-task router, so the mode picks the model:
+`.claude/settings.json` sets `"model": "opusplan"`: Opus 5.5 in plan mode, Sonnet 5.5 outside it. The mode picks the model:
 
-- Plan mode (Shift+Tab): architecture decisions, hard bugs, security-sensitive changes, changes across several areas, and tasks that turn out harder than they looked. Approving the plan runs the edits on Sonnet.
-- Outside plan mode: small edits, copy, simple refactors and other low-risk tasks.
+- Plan mode (Shift+Tab): architecture, hard bugs, security-sensitive or multi-area changes.
+- Outside plan mode: small edits, copy, simple refactors.
 - `/model opus` keeps Opus for work that writes files while it reasons (e.g. a large `/opsx:propose`).
 
 ## Checks

@@ -25,7 +25,7 @@ context: |
   - Single AWS account, us-east-1, prod only for now; S3 remote state with native locking
   - CI authenticates to AWS with GitHub OIDC roles only (no static keys); Terraform plans on PRs, applies on main behind the production environment
 
-  Security (full policy: the "Security" section of CLAUDE.md; OWASP Top 10, OWASP API Security Top 10, ASVS Level 2):
+  Security (full policy: docs/security.md, process in the "Security" section of CLAUDE.md; OWASP Top 10, OWASP API Security Top 10, ASVS Level 2):
   - A change is security-sensitive when it touches authentication, sessions or tokens; authorization or tenant-scoped data;
     uploads, S3 keys, file paths or FFmpeg; playback signing, keys or embed domain rules; requests to URLs from input;
     raw SQL; IAM, networking or anything public; secrets; payments or webhooks; personal data; a new dependency or GitHub Action
@@ -77,7 +77,7 @@ operations:
   apply:
     guidance:
       - Follow the Testing policy in CLAUDE.md; run the relevant tests before marking a task or the change as done
-      - Follow the Security section of CLAUDE.md; do not implement a security-sensitive change until design.md documents its risks and mitigations
+      - Follow docs/security.md and the Security section of CLAUDE.md; do not implement a security-sensitive change until design.md documents its risks and mitigations
       - If a new security risk appears while implementing, add it to design.md and tasks.md before continuing, instead of working around it silently
   archive:
     guidance:

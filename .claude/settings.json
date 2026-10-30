@@ -13,7 +13,20 @@
   },
   "permissions": {
     "deny": [
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Artifact",
+      "ArtifactComments",
+      "ArtifactData",
+      "DesignSync",
+      "RemoteTrigger",
+      "CronCreate",
+      "CronDelete",
+      "CronList",
+      "ScheduleWakeup",
+      "EnterWorktree",
+      "ExitWorktree",
+      "NotebookEdit",
+      "ReportFindings"
     ]
   },
   "sandbox": {
